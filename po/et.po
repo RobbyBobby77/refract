@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: missioncenter\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-25 09:06+0300\n"
-"PO-Revision-Date: 2026-08-21 02:52+0000\n"
+"PO-Revision-Date: 2026-09-02 07:51+0000\n"
 "Last-Translator: Indrek Haav <indrekhaav@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/mission-center/"
 "mission-center/et/>\n"
@@ -381,7 +381,7 @@ msgstr ""
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:302
 msgid "If it's your first time running Mission Center"
-msgstr ""
+msgstr "Kui see on sul esimene kord Mission Center'it kasutada"
 
 #: resources/ui/apps_page/page.blp:87
 msgid "Collapse all apps and processes"
@@ -436,9 +436,8 @@ msgid "100%"
 msgstr "100%"
 
 #: resources/ui/performance_page/cpu.blp:167
-#, fuzzy
 msgid "Change _Top Graph To"
-msgstr "Muuda g_raafikut"
+msgstr "Määra ülemiseks graafikuks"
 
 #: resources/ui/performance_page/cpu.blp:170
 msgid "Overall U_tilization"
@@ -454,12 +453,11 @@ msgstr "_Kõik lõimed"
 
 #: resources/ui/performance_page/cpu.blp:185
 msgid "All Threads _Stacked"
-msgstr ""
+msgstr "Kõik lõimed _virnastatult"
 
 #: resources/ui/performance_page/cpu.blp:191
-#, fuzzy
 msgid "Change B_ottom Graph To"
-msgstr "Muuda g_raafikut"
+msgstr "Määra alumiseks graafikuks"
 
 #: resources/ui/performance_page/cpu.blp:194
 #: resources/ui/performance_page/gpu.blp:219
@@ -481,7 +479,7 @@ msgstr "_Taktsagedus"
 #: resources/ui/performance_page/gpu.blp:234
 #: resources/ui/performance_page/gpu.blp:268
 msgid "_None"
-msgstr ""
+msgstr "_Tühi"
 
 #: resources/ui/performance_page/cpu.blp:215
 msgid "Show Kernel Times"
@@ -625,15 +623,13 @@ msgid "Memory usage over "
 msgstr "Mälukasutus perioodil "
 
 #: resources/ui/performance_page/gpu.blp:206
-#, fuzzy
 msgid "Change Middle Graph To"
-msgstr "Muuda g_raafikut"
+msgstr "Määra keskmiseks graafikuks"
 
 #: resources/ui/performance_page/gpu.blp:209
 #: resources/ui/performance_page/gpu.blp:243
-#, fuzzy
 msgid "_Encode/_Decode"
-msgstr "Kuva kodeerimise/dekodeerimise kasutust"
+msgstr "Kodeerimine/dekodeerimine"
 
 #: resources/ui/performance_page/gpu.blp:214
 #: resources/ui/performance_page/gpu.blp:248
@@ -646,9 +642,8 @@ msgid "_Clock Speeds"
 msgstr "_Taktsagedused"
 
 #: resources/ui/performance_page/gpu.blp:240
-#, fuzzy
 msgid "Change Bottom Graph To"
-msgstr "Muuda g_raafikut"
+msgstr "Määra alumiseks graafikuks"
 
 #: resources/ui/performance_page/memory.blp:41
 #: resources/ui/table_view/table_view.blp:59
@@ -791,9 +786,8 @@ msgid "Last Updated:"
 msgstr "Viimati uuendatud:"
 
 #: resources/ui/performance_page/disk_smart_data_dialog.blp:69
-#, fuzzy
 msgid "Powered On:"
-msgstr "Tööaeg"
+msgstr "Tööaeg:"
 
 #: resources/ui/performance_page/disk_smart_data_dialog.blp:81
 msgid "Drive Health:"
@@ -1075,11 +1069,11 @@ msgstr "Kuva iga veeru vahel eraldajat"
 
 #: resources/ui/preferences/apps_services_page.blp:55
 msgid "Grey Out Zeroes"
-msgstr ""
+msgstr "Tee nullid halliks"
 
 #: resources/ui/preferences/apps_services_page.blp:56
 msgid "Gray out values that equal zero"
-msgstr ""
+msgstr "Kuva nulliga võrduvad väärtused hallilt"
 
 #: resources/ui/preferences/general_page.blp:25
 msgid "General"
@@ -1103,7 +1097,6 @@ msgid "Graph Settings"
 msgstr "Graafiku seaded"
 
 #: resources/ui/preferences/performance_page.blp:32
-#, fuzzy
 msgid "Data Points"
 msgstr "Graafiku punktide arv"
 
@@ -1117,7 +1110,7 @@ msgstr "Joonista graafikud sujuva joonega, mitte sakilise joonega"
 
 #: resources/ui/preferences/performance_page.blp:55
 msgid "Sliding Graphs"
-msgstr ""
+msgstr "Liuglevad graafikud"
 
 #: resources/ui/preferences/performance_page.blp:56
 msgid "Animate graphs (may negatively impact performance)"
@@ -1774,9 +1767,8 @@ msgid "Open _Wiki"
 msgstr "Ava _viki"
 
 #: resources/ui/window.blp:250
-#, fuzzy
 msgid "Show _First Run Dialog"
-msgstr "Kuva detailide dialoogi"
+msgstr "Kuva esmakäivituse dialoog"
 
 #: resources/ui/window.blp:257
 msgid "_About Mission Center"
@@ -2148,20 +2140,19 @@ msgstr "Ebaõnnestunud"
 
 #: src/performance_page/network.rs:458
 msgid "Disconnected"
-msgstr ""
+msgstr "Lahti ühendatud"
 
 #: src/performance_page/network.rs:459
 msgid "Disconnecting"
-msgstr ""
+msgstr "Lahtiühendamine"
 
 #: src/performance_page/network.rs:460
 msgid "Connected"
 msgstr "Ühendatud"
 
 #: src/performance_page/network.rs:461
-#, fuzzy
 msgid "Connecting"
-msgstr "Ühenduse tüüp:"
+msgstr "Ühendamine"
 
 #: src/performance_page/network.rs:462
 msgid "Configuring"
