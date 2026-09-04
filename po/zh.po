@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: missioncenter\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-25 09:06+0300\n"
-"PO-Revision-Date: 2026-08-08 11:51+0000\n"
-"Last-Translator: 宇钟 <theyearthewas@gmail.com>\n"
+"PO-Revision-Date: 2026-09-04 14:51+0000\n"
+"Last-Translator: CommDServ <commdserv@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/mission-center/mission-center/zh_Hans/>\n"
 "Language: zh\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.9\n"
 
 #: data/io.missioncenter.MissionCenter.desktop.in:2
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:4
@@ -46,8 +46,8 @@ msgid ""
 "Monitor your CPU, Memory, Disk, Network and GPU usage, accompanied by a per "
 "app and process breakdown of these statistics"
 msgstr ""
-"监控您的处理器、内存、硬盘、网络和显卡使用情况，同时附上每个应用和进程对这些"
-"信息的分解统计"
+"监控您的处理器、内存、硬盘、网络和显卡使用情况，同时附上这些信息按应用和进程"
+"的统计"
 
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:20
 msgid "Features:"
@@ -55,7 +55,7 @@ msgstr "功能："
 
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:22
 msgid "Monitor overall or per-thread CPU usage"
-msgstr "监控整体或每个线程处理器使用情况"
+msgstr "监控整体或每个线程的处理器使用情况"
 
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:23
 msgid ""
@@ -95,8 +95,8 @@ msgid ""
 "Monitor overall GPU usage, video encoder and decoder usage, memory usage and "
 "power consumption, powered by the popular NVTOP project"
 msgstr ""
-"监控显卡整体使用情况，视频编码器和解码器使用情况，内存使用情况和功耗，由受欢"
-"迎项目 NVTOP 提供支持"
+"监控显卡整体使用情况，视频编码器和解码器使用情况，显存使用情况和功耗，由知名"
+"项目 NVTOP 提供支持"
 
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:34
 msgid "Monitor system fans"
@@ -114,7 +114,7 @@ msgstr "支持缩小的摘要视图以进行简单监控"
 msgid ""
 "Use hardware accelerated rendering for all the graphs in an effort to reduce "
 "CPU and overall resource usage"
-msgstr "对所有图形使用硬件加速渲染，以减少处理器和整体资源占用"
+msgstr "对所有图形使用硬件加速渲染，以期减少处理器和整体资源占用"
 
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:40
 msgid "Uses GTK4 and Libadwaita"
@@ -159,7 +159,7 @@ msgstr "界面风格"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:52
 msgid "If light or dark interface style should be used"
-msgstr "是否应使用亮色或暗色界面风格"
+msgstr "应使用亮色或是暗色界面风格"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:58
 msgid "DEPRECATED! NO LONGER IN USE!"
@@ -169,7 +169,7 @@ msgstr "已废弃！不再使用！"
 msgid ""
 "How fast should the data be refreshed and the UI updated (in increments of "
 "50ms)"
-msgstr "刷新数据和用户界面的速度应该多快（以 50 毫秒为增量）"
+msgstr "应该以多快的速度刷新数据和用户界面（以 50 毫秒为增量）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:70
 msgid "How many points should be displayed on each chart?"
@@ -177,24 +177,24 @@ msgstr "每个图表上应该显示多少个点？"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:75
 msgid "Whether or not to use bits or bytes (default) for memory"
-msgstr "是否为内存使用位或字节（默认）"
+msgstr "是否为内存改用比特或字节（默认）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:80
 msgid "Whether or not to use base-10 or base-2 (default) for memory"
-msgstr "是否为内存使用 10 进制或 2 进制（默认）"
+msgstr "是否为内存改用 10 进制或 2 进制（默认）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:85
 msgid "Whether or not to use bits or bytes (default) for drive speed + size"
-msgstr "是否为驱动器速度和大小使用位或字节（默认）"
+msgstr "是否为驱动器速度和大小改用比特或字节（默认）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:90
 msgid ""
 "Whether or not to use base-10 or base-2 (default) for drive speed + size"
-msgstr "是否为驱动器速度和大小使用 10 进制或 2 进制（默认）"
+msgstr "是否为驱动器速度和大小改用 10 进制或 2 进制（默认）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:95
 msgid "Whether or not to use bits (default) or Bytes for network speed"
-msgstr "是否为网络速度使用位（默认）或字节"
+msgstr "是否为网络速度使用比特（默认）或字节"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:100
 msgid "Whether or not to use base-10 (default) or base-2 for network speed"
@@ -203,7 +203,7 @@ msgstr "是否为网络速度使用 10 进制（默认）或 2 进制"
 #: data/io.missioncenter.MissionCenter.gschema.xml:105
 msgid ""
 "Whether to set graph max to interface max (false) or the max observed (true)"
-msgstr "是将图形最大值设置为接口最大值 （false） 还是观察到的最大值 （true）"
+msgstr "将图形最大值设置为接口最大值 （false） 或是观察到的最大值 （true）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:110
 #: resources/ui/preferences/apps_services_page.blp:31
@@ -415,9 +415,8 @@ msgid "100%"
 msgstr "100%"
 
 #: resources/ui/performance_page/cpu.blp:167
-#, fuzzy
 msgid "Change _Top Graph To"
-msgstr "更改图表为(_R)"
+msgstr "更改顶部的图表为(_T)"
 
 #: resources/ui/performance_page/cpu.blp:170
 msgid "Overall U_tilization"
@@ -436,28 +435,24 @@ msgid "All Threads _Stacked"
 msgstr "所有线程 _堆叠"
 
 #: resources/ui/performance_page/cpu.blp:191
-#, fuzzy
 msgid "Change B_ottom Graph To"
-msgstr "更改图表为(_R)"
+msgstr "更改底部的图表为(_o)"
 
 #: resources/ui/performance_page/cpu.blp:194
 #: resources/ui/performance_page/gpu.blp:219
 #: resources/ui/performance_page/gpu.blp:253
-#, fuzzy
 msgid "_Power Draw"
-msgstr "功耗"
+msgstr "功耗(_P)"
 
 #: resources/ui/performance_page/cpu.blp:199
 #: resources/ui/performance_page/gpu.blp:229
 #: resources/ui/performance_page/gpu.blp:263
-#, fuzzy
 msgid "_Temperature"
-msgstr "温度"
+msgstr "温度(_T)"
 
 #: resources/ui/performance_page/cpu.blp:204
-#, fuzzy
 msgid "_Clock Speed"
-msgstr "时钟速度"
+msgstr "时钟速度(_C)"
 
 #: resources/ui/performance_page/cpu.blp:209
 #: resources/ui/performance_page/gpu.blp:234
@@ -607,9 +602,8 @@ msgid "Memory usage over "
 msgstr "内存占用 - 最近 "
 
 #: resources/ui/performance_page/gpu.blp:206
-#, fuzzy
 msgid "Change Middle Graph To"
-msgstr "更改图表为(_R)"
+msgstr "更改中间的图表为"
 
 #: resources/ui/performance_page/gpu.blp:209
 #: resources/ui/performance_page/gpu.blp:243
@@ -619,20 +613,17 @@ msgstr "显示编码/解码占用"
 
 #: resources/ui/performance_page/gpu.blp:214
 #: resources/ui/performance_page/gpu.blp:248
-#, fuzzy
 msgid "_Memory Usage"
-msgstr "显存占用"
+msgstr "内存占用(_M)"
 
 #: resources/ui/performance_page/gpu.blp:224
 #: resources/ui/performance_page/gpu.blp:258
-#, fuzzy
 msgid "_Clock Speeds"
-msgstr "时钟速度"
+msgstr "时钟速度(_C)"
 
 #: resources/ui/performance_page/gpu.blp:240
-#, fuzzy
 msgid "Change Bottom Graph To"
-msgstr "更改图表为(_R)"
+msgstr "更改底部的图表为"
 
 #: resources/ui/performance_page/memory.blp:41
 #: resources/ui/table_view/table_view.blp:59
@@ -842,7 +833,7 @@ msgstr "功耗"
 #: resources/ui/performance_page/gpu_details.blp:211
 #: src/performance_page/gpu.rs:806
 msgid "Memory Usage"
-msgstr "显存占用"
+msgstr "内存占用"
 
 #: resources/ui/performance_page/gpu_details.blp:282
 #: src/performance_page/gpu.rs:860
@@ -851,7 +842,7 @@ msgstr "共享内存占用"
 
 #: resources/ui/performance_page/gpu_details.blp:353
 msgid "Memory Speed"
-msgstr "显存速度"
+msgstr "内存速度"
 
 #: resources/ui/performance_page/gpu_details.blp:425
 msgid "Video encode"
@@ -1055,11 +1046,11 @@ msgstr "在每列间显示分隔符"
 
 #: resources/ui/preferences/apps_services_page.blp:55
 msgid "Grey Out Zeroes"
-msgstr ""
+msgstr "将零值置灰"
 
 #: resources/ui/preferences/apps_services_page.blp:56
 msgid "Gray out values that equal zero"
-msgstr ""
+msgstr "将零值置灰"
 
 #: resources/ui/preferences/general_page.blp:25
 msgid "General"
@@ -1752,9 +1743,8 @@ msgid "Open _Wiki"
 msgstr "打开_Wiki"
 
 #: resources/ui/window.blp:250
-#, fuzzy
 msgid "Show _First Run Dialog"
-msgstr "显示详情对话框"
+msgstr "显示初次运行对话框(_F)"
 
 #: resources/ui/window.blp:257
 msgid "_About Mission Center"
@@ -2147,9 +2137,8 @@ msgid "Unavailable"
 msgstr "不可用"
 
 #: src/performance_page/network.rs:465
-#, fuzzy
 msgid "Loading"
-msgstr "加载中…"
+msgstr "加载中"
 
 #: src/services_page/mod.rs:99
 #, rust-format
