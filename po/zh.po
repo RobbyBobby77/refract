@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: missioncenter\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-25 09:06+0300\n"
-"PO-Revision-Date: 2026-09-04 14:51+0000\n"
-"Last-Translator: CommDServ <commdserv@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-09-10 01:51+0000\n"
+"Last-Translator: ZhangPeng <scbeta@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/mission-center/mission-center/zh_Hans/>\n"
 "Language: zh\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.9\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #: data/io.missioncenter.MissionCenter.desktop.in:2
 #: data/io.missioncenter.MissionCenter.metainfo.xml.in:4
@@ -607,9 +607,8 @@ msgstr "更改中间的图表为"
 
 #: resources/ui/performance_page/gpu.blp:209
 #: resources/ui/performance_page/gpu.blp:243
-#, fuzzy
 msgid "_Encode/_Decode"
-msgstr "显示编码/解码占用"
+msgstr "编码(_E)/解码(_D)"
 
 #: resources/ui/performance_page/gpu.blp:214
 #: resources/ui/performance_page/gpu.blp:248
@@ -1004,9 +1003,8 @@ msgid "Power preference:"
 msgstr "电源首选项："
 
 #: resources/ui/preferences/apps_services_page.blp:25
-#, fuzzy
 msgid "Apps & Services"
-msgstr "应用与服务页面"
+msgstr "应用与服务"
 
 #: resources/ui/preferences/apps_services_page.blp:30
 msgid "Merge Process Stats"
@@ -1128,7 +1126,6 @@ msgid "VPN"
 msgstr "VPN"
 
 #: resources/ui/preferences/performance_page.blp:91
-#, fuzzy
 msgid "Virtual"
 msgstr "虚拟化"
 
@@ -1966,9 +1963,8 @@ msgid "No"
 msgstr "否"
 
 #: src/performance_page/cpu.rs:1034 src/performance_page/gpu.rs:1122
-#, fuzzy
 msgid "Power draw over "
-msgstr "功耗"
+msgstr "功耗 "
 
 #: src/performance_page/cpu.rs:1037 src/performance_page/gpu.rs:1125
 msgid "Clock speed over "
