@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: missioncenter\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-25 09:06+0300\n"
-"PO-Revision-Date: 2026-09-14 13:24+0000\n"
+"PO-Revision-Date: 2026-09-15 13:51+0000\n"
 "Last-Translator: Kisaragi Hiu <mail@kisaragi-hiu.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/mission-center/mission-center/zh_Hant/>\n"
@@ -339,11 +339,11 @@ msgstr "顯示交換空間圖表"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:274
 msgid "Middle Graph's Content and visibility"
-msgstr ""
+msgstr "中央圖表的內容與可見度"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:280
 msgid "Bottom Graph's Content and visibility"
-msgstr ""
+msgstr "底部圖表的內容與可見度"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:286
 msgid "The ordering of entries in the application sidebar"
@@ -358,10 +358,12 @@ msgid ""
 "Per-device visibility overrides (semicolon-separated name:show or name:hide "
 "entries)"
 msgstr ""
+"各裝置的可見度覆蓋設定（各條目以 名稱:show 來顯示， 名稱:hide 來隱藏；條目間"
+"以分號分隔）"
 
 #: data/io.missioncenter.MissionCenter.gschema.xml:302
 msgid "If it's your first time running Mission Center"
-msgstr ""
+msgstr "如果這是您第一次使用《任務中心》"
 
 #: resources/ui/apps_page/page.blp:87
 msgid "Collapse all apps and processes"
@@ -416,9 +418,8 @@ msgid "100%"
 msgstr "100%"
 
 #: resources/ui/performance_page/cpu.blp:167
-#, fuzzy
 msgid "Change _Top Graph To"
-msgstr "更改圖表為(_R)"
+msgstr "更改頂部圖表為(_T)"
 
 #: resources/ui/performance_page/cpu.blp:170
 msgid "Overall U_tilization"
@@ -434,19 +435,17 @@ msgstr "所有執行緒(_A)"
 
 #: resources/ui/performance_page/cpu.blp:185
 msgid "All Threads _Stacked"
-msgstr ""
+msgstr "所有執行緒，堆疊式(_S)"
 
 #: resources/ui/performance_page/cpu.blp:191
-#, fuzzy
 msgid "Change B_ottom Graph To"
-msgstr "更改圖表為(_R)"
+msgstr "更改底部圖表為(_B)"
 
 #: resources/ui/performance_page/cpu.blp:194
 #: resources/ui/performance_page/gpu.blp:219
 #: resources/ui/performance_page/gpu.blp:253
-#, fuzzy
 msgid "_Power Draw"
-msgstr "功率消耗"
+msgstr "功率消耗(_P)"
 
 #: resources/ui/performance_page/cpu.blp:199
 #: resources/ui/performance_page/gpu.blp:229
@@ -455,9 +454,8 @@ msgid "_Temperature"
 msgstr "溫度(_T)"
 
 #: resources/ui/performance_page/cpu.blp:204
-#, fuzzy
 msgid "_Clock Speed"
-msgstr "時脈速度"
+msgstr "時脈速度(_C)"
 
 #: resources/ui/performance_page/cpu.blp:209
 #: resources/ui/performance_page/gpu.blp:234
@@ -682,7 +680,7 @@ msgstr "已壓縮"
 
 #: resources/ui/performance_page/memory_details.blp:290
 msgid "Savings"
-msgstr ""
+msgstr "節省"
 
 #: resources/ui/performance_page/memory_details.blp:317
 msgid "Speed:"
@@ -770,9 +768,8 @@ msgid "Last Updated:"
 msgstr "上次更新："
 
 #: resources/ui/performance_page/disk_smart_data_dialog.blp:69
-#, fuzzy
 msgid "Powered On:"
-msgstr "開機時間"
+msgstr "開機時間："
 
 #: resources/ui/performance_page/disk_smart_data_dialog.blp:81
 msgid "Drive Health:"
@@ -1414,9 +1411,8 @@ msgstr "PID"
 #: resources/ui/table_view/table_view.blp:65
 #: resources/ui/table_view/process_details_dialog.blp:227
 #: src/table_view/mod.rs:903 src/table_view/mod.rs:908
-#, fuzzy
 msgid "Swap"
-msgstr "已使用交換空間"
+msgstr "交換空間"
 
 #: resources/ui/table_view/table_view.blp:71 src/performance_page/mod.rs:1264
 #: src/table_view/mod.rs:886 src/table_view/mod.rs:894
@@ -1776,9 +1772,8 @@ msgid "Retry"
 msgstr "重試"
 
 #: src/performance_page/widgets/eject_failure_dialog.rs:159
-#, fuzzy
 msgid "Kill All"
-msgstr "全部停用"
+msgstr "終止全部"
 
 #: src/performance_page/widgets/smart_data_dialog.rs:95
 #, rust-format
@@ -1954,6 +1949,9 @@ msgid ""
 "instances). Displaying BogoMIPS value as a fallback. BogoMIPS is a delay "
 "loop calibration metric, not a true frequency measurement."
 msgstr ""
+"真實 CPU 頻率資料目前無法使用（這在虛擬機、容器或雲端實體中常見）。目前改為使"
+"用 BogoMIPS 數值。BogoMIPS 的值是校準延遲迴圈 (delay loop) 用的參考值，不是真"
+"正的頻率量測值。"
 
 #: src/performance_page/cpu.rs:556 src/performance_page/fan.rs:297
 #: src/performance_page/gpu.rs:592
@@ -1969,14 +1967,12 @@ msgid "No"
 msgstr "否"
 
 #: src/performance_page/cpu.rs:1034 src/performance_page/gpu.rs:1122
-#, fuzzy
 msgid "Power draw over "
-msgstr "功率消耗"
+msgstr "此期間內的功率消耗： "
 
 #: src/performance_page/cpu.rs:1037 src/performance_page/gpu.rs:1125
-#, fuzzy
 msgid "Clock speed over "
-msgstr "此期間內的風扇速度： "
+msgstr "此期間內的時脈速度： "
 
 #: src/performance_page/disk.rs:179
 #, rust-format
@@ -2114,25 +2110,23 @@ msgstr "失敗"
 
 #: src/performance_page/network.rs:458
 msgid "Disconnected"
-msgstr ""
+msgstr "已斷線"
 
 #: src/performance_page/network.rs:459
 msgid "Disconnecting"
-msgstr ""
+msgstr "正在斷線"
 
 #: src/performance_page/network.rs:460
-#, fuzzy
 msgid "Connected"
-msgstr "連線類型："
+msgstr "已連線"
 
 #: src/performance_page/network.rs:461
-#, fuzzy
 msgid "Connecting"
-msgstr "連線類型："
+msgstr "正在連線"
 
 #: src/performance_page/network.rs:462
 msgid "Configuring"
-msgstr ""
+msgstr "正在設定"
 
 #: src/performance_page/network.rs:463
 msgid "Waiting for auth"
