@@ -136,6 +136,7 @@ pub struct Readings {
 
     pub user_services: HashMap<u64, Service>,
     pub system_services: HashMap<u64, Service>,
+    pub includes_app_data: bool,
 }
 
 impl Readings {
@@ -156,12 +157,14 @@ impl Readings {
 
             user_services: HashMap::new(),
             system_services: HashMap::new(),
+            includes_app_data: true,
         }
     }
 }
 
 pub struct MagpieClient {
     speed: Arc<AtomicU64>,
+    reduced_activity: Arc<AtomicBool>,
 
     refresh_thread: Option<std::thread::JoinHandle<()>>,
     refresh_thread_running: Arc<AtomicBool>,
@@ -190,6 +193,7 @@ impl Default for MagpieClient {
 
         Self {
             speed: Arc::new(0.into()),
+            reduced_activity: Arc::new(false.into()),
 
             refresh_thread: None,
             refresh_thread_running: Arc::new(true.into()),
@@ -206,16 +210,19 @@ impl MagpieClient {
             (BASE_INTERVAL / INTERVAL_STEP).round() as u64
         ));
         let refresh_thread_running = Arc::new(AtomicBool::new(true));
+        let reduced_activity = Arc::new(AtomicBool::new(false));
 
         let s = speed.clone();
         let run = refresh_thread_running.clone();
+        let reduced = reduced_activity.clone();
 
         let (tx, rx) = mpsc::channel::<Message>();
         let (resp_tx, resp_rx) = mpsc::channel::<Response>();
         Self {
             speed,
+            reduced_activity,
             refresh_thread: Some(std::thread::spawn(move || {
-                Self::gather_and_proxy(rx, resp_tx, run, s);
+                Self::gather_and_proxy(rx, resp_tx, run, s, reduced);
             })),
             refresh_thread_running,
             sender: tx,
@@ -225,6 +232,11 @@ impl MagpieClient {
 
     pub fn set_update_speed(&self, speed: u64) {
         self.speed.store(speed, atomic::Ordering::Release);
+    }
+
+    pub fn set_reduced_activity(&self, reduced: bool) {
+        self.reduced_activity
+            .store(reduced, atomic::Ordering::Release);
     }
 
     pub fn set_core_count_affects_percentages(&self, show: bool) {
@@ -864,6 +876,7 @@ impl MagpieClient {
         mut tx: Sender<Response>,
         running: Arc<AtomicBool>,
         speed: Arc<AtomicU64>,
+        reduced_activity: Arc<AtomicBool>,
     ) {
         let magpie = Client::new();
         magpie.start();
@@ -883,6 +896,7 @@ impl MagpieClient {
             network_connections: magpie.network_connections(),
             user_services: magpie.user_services(),
             system_services: magpie.system_services(),
+            includes_app_data: true,
         };
 
         readings
@@ -907,6 +921,7 @@ impl MagpieClient {
                 network_stats_error: std::mem::take(&mut readings.network_stats_error),
                 user_services: std::mem::take(&mut readings.user_services),
                 system_services: std::mem::take(&mut readings.system_services),
+                includes_app_data: true,
             };
 
             let initial_icons = std::mem::take(&mut app_icons);
@@ -942,21 +957,25 @@ impl MagpieClient {
         'read_loop: while running.load(atomic::Ordering::Acquire) {
             let loop_start = std::time::Instant::now();
 
-            let timer = std::time::Instant::now();
-            (readings.running_processes, readings.network_stats_error) = magpie.processes();
-            g_debug!(
-                "MissionCenter::Perf",
-                "Process load load took: {:?}",
-                timer.elapsed()
-            );
+            let reduced = reduced_activity.load(atomic::Ordering::Acquire);
 
-            let timer = std::time::Instant::now();
-            readings.running_apps = magpie.apps();
-            g_debug!(
-                "MissionCenter::Perf",
-                "Running apps load took: {:?}",
-                timer.elapsed(),
-            );
+            if !reduced {
+                let timer = std::time::Instant::now();
+                (readings.running_processes, readings.network_stats_error) = magpie.processes();
+                g_debug!(
+                    "MissionCenter::Perf",
+                    "Process load load took: {:?}",
+                    timer.elapsed()
+                );
+
+                let timer = std::time::Instant::now();
+                readings.running_apps = magpie.apps();
+                g_debug!(
+                    "MissionCenter::Perf",
+                    "Running apps load took: {:?}",
+                    timer.elapsed(),
+                );
+            }
 
             let timer = std::time::Instant::now();
             readings.disks_info = magpie.disks_info();
@@ -1014,31 +1033,34 @@ impl MagpieClient {
                 timer.elapsed()
             );
 
-            let timer = std::time::Instant::now();
-            readings.user_services = magpie.user_services();
-            g_debug!(
-                "MissionCenter::Perf",
-                "User services load took: {:?}",
-                timer.elapsed()
-            );
+            if !reduced {
+                let timer = std::time::Instant::now();
+                readings.user_services = magpie.user_services();
+                g_debug!(
+                    "MissionCenter::Perf",
+                    "User services load took: {:?}",
+                    timer.elapsed()
+                );
 
-            let timer = std::time::Instant::now();
-            readings.system_services = magpie.system_services();
-            g_debug!(
-                "MissionCenter::Perf",
-                "System services load took: {:?}",
-                timer.elapsed()
-            );
+                let timer = std::time::Instant::now();
+                readings.system_services = magpie.system_services();
+                g_debug!(
+                    "MissionCenter::Perf",
+                    "System services load took: {:?}",
+                    timer.elapsed()
+                );
 
-            if let Some(missing) = app!().missing_icons(readings.running_apps.keys().collect()) {
-                let app_icons = magpie.app_icons(missing);
+                if let Some(missing) = app!().missing_icons(readings.running_apps.keys().collect())
+                {
+                    let app_icons = magpie.app_icons(missing);
 
-                if !app_icons.is_empty() {
-                    idle_add_once({
-                        move || {
-                            app!().merge_app_icons(app_icons);
-                        }
-                    });
+                    if !app_icons.is_empty() {
+                        idle_add_once({
+                            move || {
+                                app!().merge_app_icons(app_icons);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -1065,6 +1087,7 @@ impl MagpieClient {
                     network_stats_error: std::mem::take(&mut readings.network_stats_error),
                     user_services: std::mem::take(&mut readings.user_services),
                     system_services: std::mem::take(&mut readings.system_services),
+                    includes_app_data: !reduced,
                 };
 
                 move || {
