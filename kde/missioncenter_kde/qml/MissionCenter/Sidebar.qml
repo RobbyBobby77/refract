@@ -17,7 +17,7 @@ GlassSurface {
     Text {
         id: heading
         x: 22
-        y: 50
+        y: Prefs.windowButtonsRight || Prefs.nativeDecorations ? 22 : 50
         text: "Performance"
         font.pixelSize: 12
         font.weight: Font.Bold

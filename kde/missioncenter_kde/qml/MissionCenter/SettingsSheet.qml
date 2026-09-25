@@ -165,6 +165,14 @@ Sheet {
                     Toggle { checked: Prefs.reduceTransparency; onToggled: c => Prefs.reduceTransparency = c }
                 }
                 SettingRow {
+                    label: "Window buttons"
+                    PillSegmented {
+                        model: [{ key: "left", title: "Left" }, { key: "right", title: "Right" }]
+                        current: Prefs.windowButtonsRight ? "right" : "left"
+                        onActivated: key => Prefs.windowButtonsRight = key === "right"
+                    }
+                }
+                SettingRow {
                     label: "Use KDE window decorations"
                     hint: "Takes effect after restarting Mission Center"
                     last: true

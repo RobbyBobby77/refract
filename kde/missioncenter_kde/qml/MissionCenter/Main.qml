@@ -9,6 +9,7 @@ ApplicationWindow {
     readonly property bool maximized: visibility === Window.Maximized || visibility === Window.FullScreen
     readonly property real cornerRadius: frameless && !maximized ? Theme.windowRadius : 0
     readonly property bool showSidebar: page === "performance"
+    readonly property bool buttonsRight: frameless && Prefs.windowButtonsRight
     readonly property real sidebarRight: showSidebar ? Theme.inset + Theme.sidebarWidth : 0
     property string page: StartupOptions.page || Prefs.lastPage || "performance"
     property string device: StartupOptions.device || Prefs.lastDevice || "cpu"
@@ -210,16 +211,18 @@ ApplicationWindow {
     }
 
     WindowControls {
+        id: windowControls
         visible: win.frameless
         window: win
-        x: Theme.inset + 17
-        y: Theme.inset + 17
+        mirrored: win.buttonsRight
+        x: win.buttonsRight ? win.width - width - Theme.inset - 18 : Theme.inset + 17
+        y: win.buttonsRight ? Theme.inset + 16 : Theme.inset + 17
     }
 
     SegmentedControl {
         id: pageSwitcher
-        readonly property real zoneLeft: win.showSidebar ? win.sidebarRight : 110
-        readonly property real zoneRight: win.width - trailingTools.width - Theme.inset - 16
+        readonly property real zoneLeft: win.showSidebar ? win.sidebarRight : (win.buttonsRight ? Theme.inset : 110)
+        readonly property real zoneRight: trailingTools.x - 16
         x: Math.round(Math.max(zoneLeft + 12, Math.min(zoneLeft + (win.width - zoneLeft - width) / 2, zoneRight - width)))
         y: Theme.inset + 2
         model: [
@@ -235,7 +238,7 @@ ApplicationWindow {
     Row {
         id: trailingTools
         anchors.right: parent.right
-        anchors.rightMargin: Theme.inset + 8
+        anchors.rightMargin: Theme.inset + 8 + (win.buttonsRight ? windowControls.width + 20 : 0)
         y: Theme.inset + 3
         spacing: 10
 

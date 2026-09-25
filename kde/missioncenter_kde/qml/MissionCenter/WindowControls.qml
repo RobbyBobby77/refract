@@ -6,17 +6,22 @@ Row {
     id: controls
 
     required property Window window
+    // On the right, use KDE's order so close sits in the corner.
+    property bool mirrored: false
     spacing: 9
 
     readonly property bool active: window.active
     HoverHandler { id: groupHover }
 
     Repeater {
-        model: [
-            { kind: "close", color: "#FF5F57", ring: "#E0443E", glyph: "close" },
-            { kind: "minimize", color: "#FEBC2E", ring: "#DEA123", glyph: "minimize" },
-            { kind: "zoom", color: "#28C840", ring: "#1AAB29", glyph: "zoom" }
-        ]
+        model: {
+            const lights = [
+                { kind: "close", color: "#FF5F57", ring: "#E0443E", glyph: "close" },
+                { kind: "minimize", color: "#FEBC2E", ring: "#DEA123", glyph: "minimize" },
+                { kind: "zoom", color: "#28C840", ring: "#1AAB29", glyph: "zoom" }
+            ]
+            return controls.mirrored ? [lights[1], lights[2], lights[0]] : lights
+        }
         delegate: Rectangle {
             id: light
             required property var modelData

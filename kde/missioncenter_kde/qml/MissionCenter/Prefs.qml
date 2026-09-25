@@ -12,6 +12,7 @@ Settings {
     property bool reduceTransparency: false
     property int backdropMode: 0         // 0 glass (blur-behind), 1 wallpaper, 2 solid
     property bool nativeDecorations: false
+    property bool windowButtonsRight: true
 
     property int updateInterval: 1000
     property int graphPoints: 60
