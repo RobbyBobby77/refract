@@ -86,6 +86,8 @@ class Session:
         self.engine.load(QUrl.fromLocalFile(str(ROOT / "qml" / "MissionCenter" / "Main.qml")))
         roots = self.engine.rootObjects()
         self.window = roots[0] if roots else None
+        if self.window is not None:
+            self.monitor.watch(self.window)
 
     def evaluate(self, expression: str):
         """Run a JS expression in Main.qml's scope (used by tests/screenshots)."""

@@ -17,6 +17,7 @@ from typing import Any
 
 from PySide6.QtCore import (
     Property,
+    QEvent,
     QFileSystemWatcher,
     QObject,
     QThread,
@@ -32,6 +33,9 @@ from . import wallpaper
 log = logging.getLogger(__name__)
 
 HISTORY = 300  # samples kept per series; graphs show the most recent N
+_VISIBILITY_EVENTS = (QEvent.Type.Expose, QEvent.Type.Show, QEvent.Type.Hide,
+                      QEvent.Type.WindowActivate, QEvent.Type.WindowDeactivate,
+                      QEvent.Type.WindowStateChange)
 NO_DATA = float("nan")  # history that hasn't been sampled yet; graphs skip it
 
 
@@ -44,10 +48,11 @@ class Series(QObject):
         super().__init__(parent)
         self._values: list[float] = [NO_DATA] * HISTORY
 
-    def push(self, value: float | None) -> None:
+    def push(self, value: float | None, notify: bool = True) -> None:
         self._values.append(float(value) if value is not None else NO_DATA)
         del self._values[0]
-        self.changed.emit()
+        if notify:
+            self.changed.emit()
 
     def _get_values(self) -> list[float]:
         return self._values
@@ -74,6 +79,8 @@ class SamplerWorker(QObject):
         super().__init__()
         self._interval = 1000
         self._want_procs = False
+        self._proc_interval = 2000   # ms; the process table needn't follow every tick
+        self._ticks = 0
         self._timer: QTimer | None = None
         self._sys = self._procs = self._apps = None
         self._magpie = None
@@ -131,6 +138,10 @@ class SamplerWorker(QObject):
         if self._timer:
             self._timer.setInterval(self._interval)
 
+    @Slot(int)
+    def setProcessInterval(self, ms: int) -> None:
+        self._proc_interval = max(0, ms)
+
     @Slot(bool)
     def setWantProcesses(self, want: bool) -> None:
         changed = want and not self._want_procs
@@ -153,7 +164,9 @@ class SamplerWorker(QObject):
             self.systemReady.emit(snap)
         except Exception:  # noqa: BLE001
             self.failed.emit(traceback.format_exc())
-        if self._want_procs:
+        self._ticks += 1
+        every = max(1, round(self._proc_interval / self._interval))
+        if self._want_procs and self._ticks % every == 0:
             self._sample_processes()
 
     def _sample_processes(self) -> None:
@@ -220,12 +233,14 @@ class Monitor(QObject):
     intervalChanged = Signal()
     pageChanged = Signal()
     servicesUserChanged = Signal()
+    processIntervalChanged = Signal()
     wallpaperChanged = Signal()
     actionFinished = Signal(str, bool, str)       # title, ok, message
     logsReady = Signal(str, str)                  # unit, text
 
     # cross-thread requests to the worker
     _reqInterval = Signal(int)
+    _reqProcessInterval = Signal(int)
     _reqProcesses = Signal(bool)
     _reqServices = Signal(bool, bool)
     _reqRefreshServices = Signal()
@@ -240,6 +255,11 @@ class Monitor(QObject):
         self._page = "performance"
         self._services_user = False
         self._ready = False
+        self._on_screen = True
+        self._stale = False
+        self._notify = True
+        self._window: QObject | None = None
+        self._process_interval = 2000
         self._wallpapers = wallpaper.resolve()
         # Follow wallpaper changes. Plasma rewrites its config atomically, which
         # drops the inotify watch, so the path is re-added after every change.
@@ -260,6 +280,7 @@ class Monitor(QObject):
         self._worker.processesReady.connect(self._on_processes)
         self._worker.failed.connect(lambda tb: log.error("sampler failure:\n%s", tb))
         self._reqInterval.connect(self._worker.setInterval)
+        self._reqProcessInterval.connect(self._worker.setProcessInterval)
         self._reqProcesses.connect(self._worker.setWantProcesses)
         self._reqStop.connect(self._worker.stop)
 
@@ -294,10 +315,15 @@ class Monitor(QObject):
     @Slot(object)
     def _on_system(self, snap: dict[str, Any]) -> None:
         self._snap = snap
-        self._record(snap)
-        self._devices.update(snap, self._static)
-        self._ready = True
-        self.sampled.emit()
+        # Off screen (minimized, other desktop) the history keeps growing, but
+        # nothing in the UI is told until the window is back.
+        self._record(snap, notify=self._on_screen)
+        if self._on_screen:
+            self._devices.update(snap, self._static)
+            self._ready = True
+            self.sampled.emit()
+        else:
+            self._stale = True
 
     @Slot(object, object)
     def _on_processes(self, procs: list[dict[str, Any]], apps: list[dict[str, Any]]) -> None:
@@ -311,9 +337,13 @@ class Monitor(QObject):
         s = self._series.get(key)
         if s is None:
             s = self._series[key] = Series(self)
-        s.push(value)
+        s.push(value, self._notify)
 
-    def _record(self, snap: dict[str, Any]) -> None:
+    def _record(self, snap: dict[str, Any], notify: bool = True) -> None:
+        self._notify = notify
+        self._record_values(snap)
+
+    def _record_values(self, snap: dict[str, Any]) -> None:
         cpu = snap.get("cpu") or {}
         self._push("cpu", cpu.get("usage"))
         self._push("cpu.kernel", cpu.get("kernel_usage"))
@@ -396,9 +426,54 @@ class Monitor(QObject):
     def _set_page(self, page: str) -> None:
         if page != self._page:
             self._page = page
-            self._reqProcesses.emit(page == "apps")
-            self._reqServices.emit(page == "services", self._services_user)
+            self._update_wants()
             self.pageChanged.emit()
+
+    def _update_wants(self) -> None:
+        self._reqProcesses.emit(self._on_screen and self._page == "apps")
+        self._reqServices.emit(self._on_screen and self._page == "services", self._services_user)
+
+    def _get_process_interval(self) -> int:
+        return self._process_interval
+
+    def _set_process_interval(self, ms: int) -> None:
+        if ms != self._process_interval:
+            self._process_interval = ms
+            self._reqProcessInterval.emit(ms)
+            self.processIntervalChanged.emit()
+
+    processInterval = Property(int, _get_process_interval, _set_process_interval,
+                               notify=processIntervalChanged)
+
+    # -- on-screen tracking ------------------------------------------------------
+    def watch(self, window: QObject) -> None:
+        """Follow whether `window` can be seen; minimized or on another desktop
+        it isn't exposed (KWin suspends it), and then sampling for the tables
+        pauses and the UI stops updating."""
+        self._window = window
+        window.installEventFilter(self)
+
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        if obj is self._window and event.type() in _VISIBILITY_EVENTS:
+            QTimer.singleShot(0, self._check_on_screen)
+        return False
+
+    def _check_on_screen(self) -> None:
+        w = self._window
+        # Being focused always counts as visible, in case a compositor never
+        # re-sends an expose after restoring the window.
+        on = bool(w.isExposed() or w.isActive())
+        if on == self._on_screen:
+            return
+        self._on_screen = on
+        self._update_wants()
+        if on and self._stale:
+            self._stale = False
+            for s in self._series.values():
+                s.changed.emit()
+            self._devices.update(self._snap, self._static)
+            self._ready = True
+            self.sampled.emit()
 
     activePage = Property(str, _get_page, _set_page, notify=pageChanged)
 
@@ -410,7 +485,7 @@ class Monitor(QObject):
             self._services_user = user
             # Drop the other scope's rows at once so no action can target them.
             self._services.reset()
-            self._reqServices.emit(self._page == "services", user)
+            self._reqServices.emit(self._on_screen and self._page == "services", user)
             self.servicesUserChanged.emit()
 
     servicesUser = Property(bool, _get_services_user, _set_services_user, notify=servicesUserChanged)

@@ -27,6 +27,7 @@ ApplicationWindow {
 
     Binding { target: Theme; property: "glassSource"; value: scene }
     Binding { target: Monitor; property: "interval"; value: Prefs.updateInterval }
+    Binding { target: Monitor; property: "processInterval"; value: Prefs.processInterval }
     Binding { target: Monitor; property: "activePage"; value: win.page }
     Binding { target: Monitor; property: "servicesUser"; value: Prefs.showUserServices }
 

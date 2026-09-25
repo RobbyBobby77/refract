@@ -67,8 +67,11 @@ libdrm-devel mesa-libgbm-devel systemd-devel`.
 4. Anything involving the see-through window needs a composited capture:
    `spectacle -b -n -f -o /tmp/full.png` while the app is on screen (grabWindow can't see
    KWin's blur).
-5. Performance: idle cost should stay around ~4% of one core on Performance and ~11% on
-   Apps. Measure per thread via `/proc/<pid>/task/*/stat` (utime+stime over 20 s).
+5. Performance: with the screen on, expect roughly 1–2% of a core for the app plus ~3.5%
+   for magpie on Performance, and ~6% for magpie on Apps. Measure per thread via
+   `/proc/<pid>/task/*/stat` (utime+stime over 20 s), including the bridge and magpie
+   child processes. Measure with the display on: with it off, KWin suspends the window,
+   rendering stops and the numbers look better than they are.
 6. `./install.sh` so the user's installed app picks up the change; commit and
    `git push github liquid-glass-kde` (the GitHub remote is named `github`).
 
@@ -94,6 +97,13 @@ to see Qt/scenegraph logs. QML warnings are already routed to Python logging ("Q
   start ticks) guard against recycled PIDs — keep passing them.
 - Heavy or rarely visible views must be lazily instantiated (`Loader`), e.g. the 32-graph
   per-core grid; bindings on hidden items still evaluate every tick.
+- Cost control: every magpie request makes magpie refresh that category, so request only
+  what's needed — fans/batteries every 3rd sample, the app list every 5th process sample,
+  the process table at `Prefs.processInterval` (2 s default). While the window isn't on
+  screen (not exposed and not active: minimized, other desktop, display off) `Monitor`
+  keeps recording history silently, stops table/service polling and skips UI updates,
+  then flushes once it's back (`Monitor.watch`). Keep new periodic work behind the same
+  checks.
 - Apple semantics: Theme.qml holds the system colours, radii, type; device colours via
   `Theme.deviceColor(name)`. Numbers use `font.features: Theme.tabular`; don't apply it to
   prose (it widens hyphens).

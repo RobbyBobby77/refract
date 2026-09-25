@@ -191,6 +191,15 @@ Sheet {
                     }
                 }
                 SettingRow {
+                    label: "Process list updates"
+                    hint: "How often the Apps table refreshes; slower uses less CPU"
+                    PillSegmented {
+                        model: [{ key: "0", title: "Live" }, { key: "2000", title: "2 s" }, { key: "5000", title: "5 s" }]
+                        current: String(Prefs.processInterval)
+                        onActivated: key => Prefs.processInterval = parseInt(key)
+                    }
+                }
+                SettingRow {
                     label: "Graph history"
                     PillSegmented {
                         model: [{ key: "30", title: "30" }, { key: "60", title: "60" }, { key: "120", title: "120" }, { key: "240", title: "240" }]

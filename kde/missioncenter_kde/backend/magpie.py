@@ -43,6 +43,8 @@ _BATTERY_TECH = {1: "Li-ion", 2: "Li-polymer", 3: "LiFePO4", 4: "Lead acid",
                  5: "NiCd", 6: "NiMH"}
 _VENDORS = {0x1002: "AMD", 0x10DE: "NVIDIA", 0x8086: "Intel", 0x5143: "Qualcomm", 0x13B5: "ARM"}
 _MK_TO_C = -273150
+_SLOW_EVERY = 3        # fans/batteries: refresh every Nth system sample
+_APPS_EVERY = 5        # app list (membership only): every Nth process sample
 
 
 def find_binaries() -> tuple[Path, Path] | None:
@@ -113,6 +115,11 @@ class MagpieSystemSampler:
         self._hwmon_names: dict[int, str] = {}
         self._net_drivers: dict[str, str | None] = {}
         self._gpu_drivers: dict[str, str | None] = {}
+        # Fans and batteries change slowly: refresh them every few samples
+        # (each magpie request triggers a refresh on its side).
+        self._ticks = 0
+        self._fans: list[dict[str, Any]] = []
+        self._batteries: list[dict[str, Any]] = []
 
     # -- static ---------------------------------------------------------------
     def static_info(self) -> dict[str, Any]:
@@ -148,6 +155,12 @@ class MagpieSystemSampler:
     # -- live -------------------------------------------------------------------
     def sample(self) -> dict[str, Any]:
         c = self._client
+        if self._ticks % _SLOW_EVERY == 0:
+            self._fans = [self._fan(f) for f in _dig(c.call({"get_fans": {}}), "fans", "response", "fans", "fans") or []]
+            self._batteries = [self._battery(b) for b in _dig(c.call({"get_battery": {}}),
+                                                               "batteries", "response", "batteries", "batteries") or []
+                               if b.get("kind") in (None, 2)]
+        self._ticks += 1
         return {
             "timestamp": time.monotonic(),
             "cpu": self._cpu(_dig(c.call({"get_cpu": {}}), "cpu", "response", "cpu") or {}),
@@ -159,10 +172,8 @@ class MagpieSystemSampler:
                                                     "connections", "response", "connections", "connections") or {}).values()],
             "gpus": [self._gpu(gid, g) for gid, g in sorted((_dig(c.call({"get_gpus": {}}),
                                                                   "gpus", "response", "gpus", "gpus") or {}).items())],
-            "fans": [self._fan(f) for f in _dig(c.call({"get_fans": {}}), "fans", "response", "fans", "fans") or []],
-            "batteries": [self._battery(b) for b in _dig(c.call({"get_battery": {}}),
-                                                          "batteries", "response", "batteries", "batteries") or []
-                          if b.get("kind") in (None, 2)],
+            "fans": self._fans,
+            "batteries": self._batteries,
         }
 
     def _cpu(self, cpu: dict[str, Any]) -> dict[str, Any]:
@@ -326,6 +337,8 @@ class MagpieProcessSampler:
         self._owners: dict[int, tuple[str, str]] = {}   # pid -> (name, user)
         self._users: dict[int, str] = {}
         self._icons: dict[str, str] = {}
+        self._apps: list[dict[str, Any]] = []
+        self._resolves = 0
         self._icon_dir = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "missioncenter-glass" / "icons"
 
     def _user(self, pid: int, name: str) -> str:
@@ -372,7 +385,13 @@ class MagpieProcessSampler:
         return rows
 
     def resolve(self, processes: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        apps = _dig(self._client.call({"get_apps": {}}), "apps", "response", "apps", "apps") or []
+        # Which processes belong to which app changes rarely, and asking magpie
+        # costs it a second full process scan — so only now and then. Usage is
+        # summed from the fresh process list either way.
+        if self._resolves % _APPS_EVERY == 0 or not self._apps:
+            self._apps = _dig(self._client.call({"get_apps": {}}), "apps", "response", "apps", "apps") or []
+        self._resolves += 1
+        apps = self._apps
         missing = [a["id"] for a in apps if a["id"] not in self._icons]
         if missing:
             self._fetch_icons(missing)

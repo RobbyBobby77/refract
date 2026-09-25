@@ -15,6 +15,7 @@ Settings {
     property bool windowButtonsRight: true
 
     property int updateInterval: 1000
+    property int processInterval: 2000   // 0 = every update
     property int graphPoints: 60
     property bool smoothGraphs: true
     property bool cpuPerCore: false
