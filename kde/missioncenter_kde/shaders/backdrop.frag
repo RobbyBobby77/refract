@@ -12,7 +12,8 @@ layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
     vec2 itemSize;
-    vec2 imageSize;
+    vec2 pictureSize;   // wallpaper pixels (a uniform named "imageSize" is never
+                        // filled in by ShaderEffect, so don't rename it back)
     float radius;
     float blurBias;
     float mode;
@@ -65,7 +66,7 @@ void main()
         if (mode < 0.5) {
             // "cover" fit of the wallpaper into the window
             float itemAspect = itemSize.x / max(itemSize.y, 1.0);
-            float imgAspect = imageSize.x / max(imageSize.y, 1.0);
+            float imgAspect = pictureSize.x / max(pictureSize.y, 1.0);
             vec2 scale = itemAspect > imgAspect ? vec2(1.0, imgAspect / itemAspect)
                                                 : vec2(itemAspect / imgAspect, 1.0);
             vec2 uv = (qt_TexCoord0 - 0.5) * scale + 0.5;
@@ -74,7 +75,7 @@ void main()
             float wsum = 0.0;
             for (int i = 0; i < 16; ++i) {
                 float fi = float(i) + 0.5;
-                float rr = sqrt(fi / 16.0) * 0.035;
+                float rr = sqrt(fi / 16.0) * 0.024;
                 vec2 o = vec2(cos(fi * GOLDEN), sin(fi * GOLDEN)) * rr * scale;
                 float w = 1.0 - 0.5 * fi / 16.0;
                 acc += texture(source, uv + o, blurBias).rgb * w;

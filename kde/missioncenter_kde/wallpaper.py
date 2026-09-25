@@ -3,7 +3,6 @@ the way macOS windows pick up colour from the desktop behind them."""
 
 from __future__ import annotations
 
-import configparser
 import os
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -47,25 +46,55 @@ def _from_package(pkg: Path) -> tuple[Path | None, Path | None]:
     return light, dark
 
 
-def _configured() -> Path | None:
-    if not CONFIG.exists():
-        return None
-    parser = configparser.RawConfigParser(strict=False, interpolation=None)
-    parser.optionxform = str
+def _from_plasmashell() -> Path | None:
+    """Ask the running Plasma shell which image is on screen 0."""
     try:
-        parser.read(CONFIG, encoding="utf-8")
-    except (configparser.Error, UnicodeDecodeError):
+        import dbus
+
+        shell = dbus.Interface(
+            dbus.SessionBus().get_object("org.kde.plasmashell", "/PlasmaShell", introspect=False),
+            "org.kde.PlasmaShell")
+        config = shell.wallpaper(dbus.UInt32(0), timeout=1.5)
+    except Exception:  # noqa: BLE001 - no Plasma, no D-Bus, old Plasma…
         return None
-    for section in parser.sections():
-        if not section.endswith("[Wallpaper][org.kde.image][General]"):
+    return _to_path(str(config.get("Image", "")))
+
+
+def _kde_groups(text: str) -> dict[str, dict[str, str]]:
+    """Parse a KConfig file. (configparser mangles KDE's nested
+    "[Containments][1][Wallpaper]..." group names, so do it by hand.)"""
+    groups: dict[str, dict[str, str]] = {}
+    current: dict[str, str] | None = None
+    for raw in text.splitlines():
+        line = raw.strip()
+        if line.startswith("[") and line.endswith("]"):
+            current = groups.setdefault(line, {})
+        elif current is not None and "=" in line and not line.startswith("#"):
+            key, value = line.split("=", 1)
+            current[key.strip()] = value.strip()
+    return groups
+
+
+def _from_config() -> Path | None:
+    """Read the wallpaper from Plasma's config, preferring desktops on screen 0."""
+    try:
+        groups = _kde_groups(CONFIG.read_text(encoding="utf-8", errors="replace"))
+    except OSError:
+        return None
+    candidates = []
+    for name, entries in groups.items():
+        if not name.endswith("[Wallpaper][org.kde.image][General]"):
             continue
-        image = parser.get(section, "Image", fallback="")
+        containment = groups.get(name.split("[Wallpaper]", 1)[0], {})
+        on_first_screen = containment.get("lastScreen") == "0"
+        candidates.append((not on_first_screen, entries.get("Image", "")))
+    for _, image in sorted(candidates):
         p = _to_path(image)
         if p:
             return p
-    for section in parser.sections():
-        if section.endswith("[Wallpaper][org.kde.slideshow][General]"):
-            for folder in parser.get(section, "SlidePaths", fallback="").split(","):
+    for name, entries in groups.items():
+        if name.endswith("[Wallpaper][org.kde.slideshow][General]"):
+            for folder in entries.get("SlidePaths", "").split(","):
                 p = _to_path(folder)
                 if p and p.is_dir():
                     for child in sorted(p.iterdir()):
@@ -76,7 +105,7 @@ def _configured() -> Path | None:
 
 def resolve() -> tuple[str, str]:
     """Return (light, dark) wallpaper URLs; empty strings if none found."""
-    source = _configured() or (_FALLBACK if _FALLBACK.exists() else None)
+    source = _from_plasmashell() or _from_config() or (_FALLBACK if _FALLBACK.exists() else None)
     light = dark = None
     if source is not None:
         if source.is_dir():

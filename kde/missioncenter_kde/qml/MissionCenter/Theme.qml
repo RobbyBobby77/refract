@@ -96,8 +96,10 @@ QtObject {
         ? (dark ? Qt.rgba(0.09, 0.09, 0.11, tinted ? 0.90 : 0.80) : Qt.rgba(0.94, 0.94, 0.96, tinted ? 0.92 : 0.82))
         : (dark ? "#18181B" : "#EDEDF1")
     readonly property color windowRim: dark ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(1, 1, 1, 0.9)
-    // wallpaper mode: just a hint of the desktop's colour, like macOS tinting
-    readonly property color windowOverlay: dark ? Qt.rgba(0.09, 0.09, 0.11, 0.78) : Qt.rgba(0.96, 0.96, 0.98, 0.74)
+    // wallpaper mode: the desktop picture stays recognisable under a soft
+    // frosted tint (stronger with Tinted glass)
+    readonly property color windowOverlay: dark ? Qt.rgba(0.07, 0.07, 0.09, tinted ? 0.68 : 0.52)
+                                                : Qt.rgba(0.96, 0.96, 0.98, tinted ? 0.66 : 0.50)
     readonly property color shadow: dark ? Qt.rgba(0, 0, 0, 0.45) : Qt.rgba(0, 0, 0, 0.16)
 
     // --- geometry ----------------------------------------------------------------

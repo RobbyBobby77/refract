@@ -24,9 +24,9 @@ Item {
         anchors.fill: parent
         property var source: img
         property size itemSize: Qt.size(width, height)
-        property size imageSize: Qt.size(Math.max(img.implicitWidth, 1), Math.max(img.implicitHeight, 1))
+        property size pictureSize: Qt.size(Math.max(img.implicitWidth, 1), Math.max(img.implicitHeight, 1))
         property real radius: root.radius
-        property real blurBias: 4.5
+        property real blurBias: 3.6
         // shader modes: 0 wallpaper, 1 aurora, 2 flat fill
         property real mode: Theme.backdrop === 1 ? (img.status === Image.Ready && root.imageUrl !== "" ? 0 : 1) : 2
         property real saturation: 1.1
