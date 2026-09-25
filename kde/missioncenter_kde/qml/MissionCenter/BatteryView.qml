@@ -63,7 +63,9 @@ DeviceView {
             ["Energy", Fmt.isNum(v.bat.energy_now_wh) ? Fmt.num(v.bat.energy_now_wh, 1) + " Wh" : ""],
             ["Full charge capacity", Fmt.isNum(v.bat.energy_full_wh) ? Fmt.num(v.bat.energy_full_wh, 1) + " Wh" : ""],
             ["Design capacity", Fmt.isNum(v.bat.energy_design_wh) ? Fmt.num(v.bat.energy_design_wh, 1) + " Wh" : ""],
-            ["Voltage", Fmt.isNum(v.bat.voltage_v) ? Fmt.num(v.bat.voltage_v, 2) + " V" : ""]
+            ["Voltage", Fmt.isNum(v.bat.voltage_v) ? Fmt.num(v.bat.voltage_v, 2) + " V" : ""],
+            ["Charge limit", Fmt.isNum(v.bat.charge_limit) ? v.bat.charge_limit + "%" : ""],
+            ["Temperature", Fmt.temp(v.bat.temperature_c)]
         ]
     }
 }

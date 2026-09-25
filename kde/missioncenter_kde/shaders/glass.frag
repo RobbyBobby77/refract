@@ -36,19 +36,19 @@ float sdRoundBox(vec2 p, vec2 b, float r)
     return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 }
 
-vec3 frosted(vec2 uv, vec2 pxToUv, float amount)
+vec4 frosted(vec2 uv, vec2 pxToUv, float amount)
 {
     // Golden-angle spiral taps over a mip-biased lookup: a cheap, smooth
     // single-pass blur that still feels like thick frosted glass.
     const float GOLDEN = 2.39996323;
-    vec3 acc = texture(source, uv, blurBias).rgb;
+    vec4 acc = texture(source, uv, blurBias);
     float wsum = 1.0;
     for (int i = 0; i < 12; ++i) {
         float fi = float(i) + 0.5;
         float rr = sqrt(fi / 12.0) * amount;
         vec2 o = vec2(cos(fi * GOLDEN), sin(fi * GOLDEN)) * rr * pxToUv;
         float w = 1.0 - 0.6 * (fi / 12.0);
-        acc += texture(source, uv + o, blurBias).rgb * w;
+        acc += texture(source, uv + o, blurBias) * w;
         wsum += w;
     }
     return acc / wsum;
@@ -79,16 +79,20 @@ void main()
     // Sample each channel with a slightly different bend for dispersion.
     // Kept branch-free: implicit-derivative lookups inside a divergent branch
     // produce seams along the rim boundary.
+    // The scene is premultiplied and may be translucent (over KWin's blur),
+    // so alpha is carried through: the desktop keeps showing through.
     float k = dispersion * 0.35 * step(0.002, lens);
-    vec3 col;
-    col.r = frosted(screenUV + disp * (1.0 - k), pxToUv, fr).r;
-    col.g = frosted(screenUV + disp, pxToUv, fr).g;
-    col.b = frosted(screenUV + disp * (1.0 + k), pxToUv, fr).b;
+    vec4 mid = frosted(screenUV + disp, pxToUv, fr);
+    vec4 s = vec4(frosted(screenUV + disp * (1.0 - k), pxToUv, fr).r, mid.g,
+                  frosted(screenUV + disp * (1.0 + k), pxToUv, fr).b, mid.a);
 
-    // Vibrancy + material tint.
-    float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
-    col = mix(vec3(luma), col, saturation);
-    col = mix(col, tint.rgb, tint.a);
+    // Vibrancy on the unpremultiplied colour, then the material tint laid
+    // over it as its own translucent layer.
+    vec3 c = s.rgb / max(s.a, 1e-4);
+    float luma = dot(c, vec3(0.2126, 0.7152, 0.0722));
+    c = mix(vec3(luma), c, saturation);
+    vec3 col = tint.rgb * tint.a + c * s.a * (1.0 - tint.a);
+    float matter = tint.a + s.a * (1.0 - tint.a);
 
     // Specular rim: a hairline that is brightest where it faces the light,
     // plus a softer glow inside the bevel.
@@ -104,6 +108,7 @@ void main()
     col += vec3(shine * 0.05 * sheen);
     col += vec3(press * 0.07);
 
-    float alpha = clamp(0.5 - d, 0.0, 1.0);
-    fragColor = vec4(col * alpha, alpha) * qt_Opacity;
+    // Highlights are emitted light (added in premultiplied space).
+    float cover = clamp(0.5 - d, 0.0, 1.0);
+    fragColor = vec4(col, matter) * cover * qt_Opacity;
 }

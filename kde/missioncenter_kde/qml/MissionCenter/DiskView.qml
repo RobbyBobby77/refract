@@ -119,7 +119,11 @@ DeviceView {
             ["Capacity", Fmt.bytes(v.disk.capacity, 2)],
             ["Formatted", Fmt.bytes(v.disk.formatted, 2)],
             ["System disk", v.disk.system_disk ? "Yes" : "No"],
-            ["Removable", v.disk.removable ? "Yes" : "No"]
+            ["Removable", v.disk.removable ? "Yes" : "No"],
+            ["Serial number", v.disk.serial],
+            ["Total read", Fmt.bytes(v.disk.read_total, 1)],
+            ["Total written", Fmt.bytes(v.disk.write_total, 1)],
+            ["Rotation", Fmt.isNum(v.disk.rotation_rpm) && v.disk.rotation_rpm > 0 ? v.disk.rotation_rpm + " RPM" : ""]
         ]
     }
 }

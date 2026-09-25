@@ -16,6 +16,7 @@ from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
 from PySide6.QtQuickControls2 import QQuickStyle
 
 from .bridge import Monitor
+from .effects import WindowEffects
 
 ROOT = Path(__file__).resolve().parent
 APP_ID = "io.missioncenter.MissionCenter.Glass"
@@ -66,11 +67,13 @@ class Session:
         self.app.setFont(font)
 
         self.monitor = Monitor()
+        self.effects = WindowEffects()
         self.engine = QQmlApplicationEngine()
         self.engine.warnings.connect(
             lambda warnings: [logging.warning("QML: %s", w.toString()) for w in warnings])
         ctx = self.engine.rootContext()
         ctx.setContextProperty("Monitor", self.monitor)
+        ctx.setContextProperty("WindowEffects", self.effects)
         ctx.setContextProperty("ShaderDir", QUrl.fromLocalFile(str(ROOT / "shaders") + "/").toString())
         ctx.setContextProperty("StartupOptions", {
             "page": args.page or "",

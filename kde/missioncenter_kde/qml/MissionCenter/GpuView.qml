@@ -53,18 +53,20 @@ DeviceView {
             format: function (p) { return Fmt.bytes(p / 100 * (v.gpu.gtt_total || 0), 1) }
         }
         GraphCard {
+            // AMD's VCN (and some others) share one engine for both directions
+            readonly property bool shared: !!v.gpu.encode_decode_shared
             visible: v.hasVideo
             width: parent.cardWidth
             height: 170
             padding: 14
-            title: "Video Encode / Decode"
+            title: shared ? "Video Encode/Decode" : "Video"
             trailing: "100%"
             series: Monitor.series("gpu." + v.devId + ".encode")
-            series2: Monitor.series("gpu." + v.devId + ".decode")
+            series2: shared ? null : Monitor.series("gpu." + v.devId + ".decode")
             color: Theme.deviceColor("orange")
             color2: Theme.deviceColor("yellow")
-            legend1: "Enc"
-            legend2: "Dec"
+            legend1: shared ? "" : "Enc"
+            legend2: shared ? "" : "Dec"
             graph.showGrid: false
         }
     }
@@ -90,6 +92,9 @@ DeviceView {
             ["Driver", v.gpu.driver],
             ["Driver version", v.gpu.driver_version],
             ["Bus", v.gpu.pcie],
+            ["OpenGL", v.gpu.opengl],
+            ["Vulkan", v.gpu.vulkan],
+            ["Fan", Fmt.isNum(v.gpu.fan_percent) ? Fmt.percent(v.gpu.fan_percent) : ""],
             ["Maximum clock", Fmt.freq(v.gpu.clock_max_mhz)],
             ["Memory clock", Fmt.isNum(v.gpu.mem_clock_mhz) ? Fmt.freq(v.gpu.mem_clock_mhz) : Fmt.freq(v.gpu.mem_clock_max_mhz)],
             ["Power cap", Fmt.watts(v.gpu.power_cap_w)]

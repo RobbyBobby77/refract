@@ -153,8 +153,9 @@ Sheet {
                 }
                 SettingRow {
                     label: "Window background"
+                    hint: WindowEffects.available ? "Glass shows your desktop through the window" : "Glass needs KWin's blur effect"
                     PillSegmented {
-                        model: [{ key: "0", title: "Wallpaper" }, { key: "1", title: "Aurora" }, { key: "2", title: "Solid" }]
+                        model: [{ key: "0", title: "Glass" }, { key: "1", title: "Wallpaper" }, { key: "2", title: "Solid" }]
                         current: String(Prefs.backdropMode)
                         onActivated: key => Prefs.backdropMode = parseInt(key)
                     }
@@ -195,8 +196,18 @@ Sheet {
                 }
                 SettingRow {
                     label: "Show kernel time in CPU graph"
-                    last: true
                     Toggle { checked: Prefs.showKernelTime; onToggled: c => Prefs.showKernelTime = c }
+                }
+                SettingRow {
+                    label: "Data engine"
+                    hint: Monitor.staticInfo.engine === "magpie" ? "Mission Center's own collector, via its IPC bridge" : "Build the native parts (build-native.sh) to use magpie"
+                    last: true
+                    Text {
+                        text: Monitor.staticInfo.engine === "magpie" ? "magpie" : "Built-in"
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
+                        color: Theme.secondaryLabel
+                    }
                 }
             }
 

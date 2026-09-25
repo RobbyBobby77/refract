@@ -39,6 +39,25 @@ rm -rf "$DATA/missioncenter_kde"
 cp -r "$SRC/missioncenter_kde" "$DATA/"
 find "$DATA" -name __pycache__ -type d -prune -exec rm -rf {} +
 
+# Optional native helpers (see build-native.sh); skipped without a toolchain.
+if command -v cmake >/dev/null && command -v g++ >/dev/null; then
+    if "$SRC/build-native.sh"; then
+        native="$DATA/missioncenter_kde/native"
+        mkdir -p "$native"
+        cp "$SRC/native/build/libmcglass.so" "$native/"
+        magpie="$SRC/../subprojects/magpie/target/release/magpie"
+        bridge="$SRC/magpie-bridge/target/release/mc-glass-bridge"
+        if [[ -x "$magpie" && -x "$bridge" ]]; then
+            cp "$magpie" "$native/missioncenter-magpie"
+            cp "$bridge" "$native/mc-glass-bridge"
+        fi
+    else
+        echo "note: native parts failed to build; installing without them"
+    fi
+else
+    echo "note: cmake/g++ not found; installing without KWin blur or magpie"
+fi
+
 cat > "$BIN" <<LAUNCHER
 #!/bin/sh
 export PYTHONPATH="$DATA\${PYTHONPATH:+:\$PYTHONPATH}"

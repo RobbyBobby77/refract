@@ -83,10 +83,21 @@ QtObject {
     // navigation-layer glass
     readonly property color glassTint: reduceTransparency ? (dark ? Qt.rgba(0.14, 0.14, 0.16, 0.96) : Qt.rgba(0.97, 0.97, 0.98, 0.96))
                                      : tinted ? (dark ? Qt.rgba(0.10, 0.10, 0.12, 0.62) : Qt.rgba(1, 1, 1, 0.70))
-                                     : dark ? Qt.rgba(0.10, 0.10, 0.13, 0.30) : Qt.rgba(1, 1, 1, 0.38)
+                                     : dark ? Qt.rgba(0.22, 0.22, 0.25, 0.32) : Qt.rgba(1, 1, 1, 0.40)
     readonly property color glassRim: dark ? Qt.rgba(1, 1, 1, 0.55) : Qt.rgba(1, 1, 1, 1.0)
-    readonly property color windowOverlay: dark ? Qt.rgba(0.04, 0.04, 0.06, Prefs.backdropMode === 2 ? 1.0 : 0.46)
-                                                : Qt.rgba(0.96, 0.96, 0.98, Prefs.backdropMode === 2 ? 1.0 : 0.52)
+    // window background: 0 glass (see-through, over KWin's blur),
+    // 1 wallpaper tint, 2 solid. Glass needs the compositor; otherwise solid.
+    readonly property int backdrop: Prefs.backdropMode === 0 && (!WindowEffects.available || reduceTransparency) ? 2 : Prefs.backdropMode
+    readonly property bool seeThrough: backdrop === 0
+    readonly property color windowFillTop: seeThrough
+        ? (dark ? Qt.rgba(0.12, 0.12, 0.14, tinted ? 0.86 : 0.74) : Qt.rgba(0.97, 0.97, 0.98, tinted ? 0.88 : 0.76))
+        : (dark ? "#1F1F22" : "#F4F4F7")
+    readonly property color windowFillBottom: seeThrough
+        ? (dark ? Qt.rgba(0.09, 0.09, 0.11, tinted ? 0.90 : 0.80) : Qt.rgba(0.94, 0.94, 0.96, tinted ? 0.92 : 0.82))
+        : (dark ? "#18181B" : "#EDEDF1")
+    readonly property color windowRim: dark ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(1, 1, 1, 0.9)
+    // wallpaper mode: just a hint of the desktop's colour, like macOS tinting
+    readonly property color windowOverlay: dark ? Qt.rgba(0.09, 0.09, 0.11, 0.78) : Qt.rgba(0.96, 0.96, 0.98, 0.74)
     readonly property color shadow: dark ? Qt.rgba(0, 0, 0, 0.45) : Qt.rgba(0, 0, 0, 0.16)
 
     // --- geometry ----------------------------------------------------------------

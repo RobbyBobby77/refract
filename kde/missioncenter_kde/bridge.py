@@ -8,6 +8,7 @@ through queued signals, where they are turned into rolling graph histories
 from __future__ import annotations
 
 import logging
+import os
 import shutil
 import subprocess
 import threading
@@ -75,15 +76,12 @@ class SamplerWorker(QObject):
         self._want_procs = False
         self._timer: QTimer | None = None
         self._sys = self._procs = self._apps = None
+        self._magpie = None
+        self._magpie_misses = 0
 
     @Slot()
     def start(self) -> None:
-        from .backend.collectors import SystemSampler
-        from .backend.processes import AppResolver, ProcessSampler
-
-        self._sys = SystemSampler()
-        self._procs = ProcessSampler()
-        self._apps = AppResolver()
+        self._use_magpie() or self._use_python()
         try:
             self.staticReady.emit(self._sys.static_info())
         except Exception:  # noqa: BLE001 - never let the sampler thread die
@@ -93,10 +91,39 @@ class SamplerWorker(QObject):
         self._timer.start(self._interval)
         self._tick()
 
+    def _use_magpie(self) -> bool:
+        """Mission Center's own engine, when it has been built (build-native.sh)."""
+        from .backend import magpie
+        from .backend.collectors import SystemSampler
+
+        binaries = magpie.find_binaries() if os.environ.get("MC_ENGINE") != "python" else None
+        if not binaries:
+            return False
+        self._magpie = magpie.MagpieClient(*binaries)
+        self._sys = magpie.MagpieSystemSampler(self._magpie, SystemSampler())
+        self._procs = self._apps = magpie.MagpieProcessSampler(self._magpie)
+        log.info("data engine: magpie (%s)", binaries[1])
+        return True
+
+    def _use_python(self) -> bool:
+        from .backend.collectors import SystemSampler
+        from .backend.processes import AppResolver, ProcessSampler
+
+        if self._magpie is not None:
+            self._magpie.close()
+            self._magpie = None
+        self._sys = SystemSampler()
+        self._procs = ProcessSampler()
+        self._apps = AppResolver()
+        log.info("data engine: built-in Python collectors")
+        return True
+
     @Slot()
     def stop(self) -> None:
         if self._timer:
             self._timer.stop()
+        if self._magpie is not None:
+            self._magpie.close()
 
     @Slot(int)
     def setInterval(self, ms: int) -> None:
@@ -113,7 +140,17 @@ class SamplerWorker(QObject):
 
     def _tick(self) -> None:
         try:
-            self.systemReady.emit(self._sys.sample())
+            snap = self._sys.sample()
+            if self._magpie is not None and not snap["cpu"].get("per_core"):
+                # magpie/bridge stopped answering: fall back after a few tries
+                self._magpie_misses += 1
+                if self._magpie_misses >= 3:
+                    log.warning("magpie is not responding; switching to the Python collectors")
+                    self._use_python()
+                    self.staticReady.emit(self._sys.static_info())
+                return
+            self._magpie_misses = 0
+            self.systemReady.emit(snap)
         except Exception:  # noqa: BLE001
             self.failed.emit(traceback.format_exc())
         if self._want_procs:

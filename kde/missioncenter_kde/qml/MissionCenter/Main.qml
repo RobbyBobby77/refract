@@ -38,6 +38,22 @@ ApplicationWindow {
         }
     }
 
+    // Ask KWin to blur the desktop behind the see-through window, following
+    // its rounded outline. Re-applied whenever that shape changes; the first
+    // time once a frame is on screen, so the Wayland surface exists.
+    function applyWindowEffects() {
+        WindowEffects.apply(win, Theme.seeThrough, cornerRadius)
+    }
+    property bool effectsApplied: false
+    onFrameSwapped: if (!effectsApplied) { effectsApplied = true; applyWindowEffects() }
+    onWidthChanged: if (effectsApplied) Qt.callLater(applyWindowEffects)
+    onHeightChanged: if (effectsApplied) Qt.callLater(applyWindowEffects)
+    onCornerRadiusChanged: if (effectsApplied) Qt.callLater(applyWindowEffects)
+    Connections {
+        target: Theme
+        function onSeeThroughChanged() { Qt.callLater(win.applyWindowEffects) }
+    }
+
     // Keep the selected device valid when hardware comes and goes.
     Connections {
         target: Monitor.devices

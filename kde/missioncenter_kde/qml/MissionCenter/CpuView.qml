@@ -112,15 +112,20 @@ DeviceView {
     }
 
     TileGrid {
-        tiles: [
-            { caption: "Utilization", value: Fmt.num(v.cpu.usage), unit: "%", accent: v.tint },
-            { caption: "Speed", text: Fmt.freq(v.cpu.freq_mhz) },
-            { caption: "Processes", text: Fmt.num(v.cpu.processes) },
-            { caption: "Threads", text: Fmt.num(v.cpu.threads) },
-            { caption: "Handles", text: Fmt.num(v.cpu.handles) },
-            { caption: "Up Time", text: Fmt.duration(v.cpu.uptime_s) },
-            { caption: "Temperature", text: Fmt.temp(v.cpu.temperature_c) }
-        ]
+        tiles: {
+            const t = [
+                { caption: "Utilization", value: Fmt.num(v.cpu.usage), unit: "%", accent: v.tint },
+                { caption: "Speed", text: Fmt.freq(v.cpu.freq_mhz) },
+                { caption: "Processes", text: Fmt.num(v.cpu.processes) },
+                { caption: "Threads", text: Fmt.num(v.cpu.threads) },
+                { caption: "Handles", text: Fmt.num(v.cpu.handles) },
+                { caption: "Up Time", text: Fmt.duration(v.cpu.uptime_s) },
+                { caption: "Temperature", text: Fmt.temp(v.cpu.temperature_c) }
+            ]
+            if (Fmt.isNum(v.cpu.power_w))
+                t.push({ caption: "Power Draw", text: Fmt.watts(v.cpu.power_w) })
+            return t
+        }
     }
 
     InfoCard {

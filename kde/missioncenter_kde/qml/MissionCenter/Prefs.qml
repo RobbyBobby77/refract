@@ -10,7 +10,7 @@ Settings {
     property string accent: "multicolor"
     property int glassStyle: 0           // 0 clear, 1 tinted
     property bool reduceTransparency: false
-    property int backdropMode: 0         // 0 wallpaper, 1 aurora, 2 solid
+    property int backdropMode: 0         // 0 glass (blur-behind), 1 wallpaper, 2 solid
     property bool nativeDecorations: false
 
     property int updateInterval: 1000
