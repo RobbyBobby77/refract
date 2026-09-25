@@ -1,0 +1,129 @@
+"""Application bootstrap: fonts, QML engine, and the Monitor bridge."""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import os
+import signal
+import sys
+from pathlib import Path
+
+from PySide6.QtCore import QCoreApplication, QTimer, QUrl
+from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication, QIcon
+from PySide6.QtQml import QQmlApplicationEngine, QQmlExpression
+from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
+from PySide6.QtQuickControls2 import QQuickStyle
+
+from .bridge import Monitor
+
+ROOT = Path(__file__).resolve().parent
+APP_ID = "io.missioncenter.MissionCenter.Glass"
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    p = argparse.ArgumentParser(prog="missioncenter-glass", description="Mission Center, in liquid glass.")
+    p.add_argument("--page", choices=["performance", "apps", "services"], help="page to open")
+    p.add_argument("--device", help="performance device key to select, e.g. memory, disk:nvme0n1")
+    p.add_argument("--theme", choices=["system", "light", "dark"], help="override the colour scheme")
+    p.add_argument("--screenshot", metavar="PNG", help="render, save a screenshot and quit (for docs/tests)")
+    p.add_argument("--delay", type=int, default=3500, help="ms to wait before --screenshot")
+    p.add_argument("--size", default="", help="initial window size WxH")
+    p.add_argument("--debug", action="store_true")
+    return p.parse_args(argv)
+
+
+def _load_fonts() -> None:
+    for f in sorted((ROOT / "fonts").glob("*.ttf")):
+        QFontDatabase.addApplicationFont(str(f))
+
+
+class Session:
+    """A running instance: application, bridge, QML engine and window."""
+
+    def __init__(self, args: argparse.Namespace) -> None:
+        logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO,
+                            format="%(levelname)s %(name)s: %(message)s")
+
+        QQuickStyle.setStyle("Basic")
+        # The glass shaders derive screen positions from clip space; pin the API
+        # so the convention is known (OpenGL is also Qt's default on Linux).
+        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGL)
+        # Frameless windows draw their own rounded corners, so they need alpha.
+        QQuickWindow.setDefaultAlphaBuffer(True)
+
+        self.app = QGuiApplication(sys.argv[:1])
+        self.app.setOrganizationName("MissionCenter")
+        self.app.setOrganizationDomain("missioncenter.io")
+        self.app.setApplicationName("MissionCenterGlass")
+        self.app.setApplicationDisplayName("Mission Center")
+        self.app.setDesktopFileName(APP_ID)
+        self.app.setWindowIcon(QIcon(str(ROOT / "icons" / f"{APP_ID}.svg")))
+
+        _load_fonts()
+        font = QFont("Inter")
+        font.setPointSizeF(10.0)
+        self.app.setFont(font)
+
+        self.monitor = Monitor()
+        self.engine = QQmlApplicationEngine()
+        self.engine.warnings.connect(
+            lambda warnings: [logging.warning("QML: %s", w.toString()) for w in warnings])
+        ctx = self.engine.rootContext()
+        ctx.setContextProperty("Monitor", self.monitor)
+        ctx.setContextProperty("ShaderDir", QUrl.fromLocalFile(str(ROOT / "shaders") + "/").toString())
+        ctx.setContextProperty("StartupOptions", {
+            "page": args.page or "",
+            "device": args.device or "",
+            "theme": args.theme or "",
+            "size": args.size,
+            "screenshot": bool(args.screenshot),
+        })
+
+        self.engine.load(QUrl.fromLocalFile(str(ROOT / "qml" / "MissionCenter" / "Main.qml")))
+        roots = self.engine.rootObjects()
+        self.window = roots[0] if roots else None
+
+    def evaluate(self, expression: str):
+        """Run a JS expression in Main.qml's scope (used by tests/screenshots)."""
+        expr = QQmlExpression(self.engine.contextForObject(self.window), self.window, expression)
+        value = expr.evaluate()
+        if expr.hasError():
+            logging.warning("evaluate(%r): %s", expression, expr.error().toString())
+        return value
+
+    def screenshot(self, path: str) -> None:
+        self.window.grabWindow().save(path)
+
+    def run(self) -> int:
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        code = self.app.exec()
+        self.close(code)
+        return code
+
+    def close(self, code: int = 0) -> None:
+        # Tear down QML first so the Settings singleton is written out.
+        del self.engine
+        if not self.monitor.shutdown():
+            # A sampler is blocked in a system call; destroying its QThread
+            # would abort, so leave without running destructors.
+            logging.warning("sampler thread did not stop in time; exiting")
+            sys.stdout.flush()
+            os._exit(code)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(sys.argv[1:] if argv is None else argv)
+    session = Session(args)
+    if session.window is None:
+        session.close(1)
+        return 1
+
+    if args.screenshot:
+        def grab() -> None:
+            session.screenshot(args.screenshot)
+            QCoreApplication.quit()
+
+        QTimer.singleShot(args.delay, grab)
+
+    return session.run()

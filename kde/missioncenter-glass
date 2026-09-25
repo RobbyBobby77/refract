@@ -1,0 +1,5 @@
+#!/bin/sh
+# Run Mission Center (Liquid Glass edition) straight from a source checkout.
+HERE="$(dirname "$(readlink -f "$0")")"
+export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -m missioncenter_kde "$@"

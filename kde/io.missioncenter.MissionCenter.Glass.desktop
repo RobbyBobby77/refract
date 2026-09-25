@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Mission Center Glass
+GenericName=System Monitor
+Comment=Monitor your CPU, memory, disk, network and GPU usage
+Exec=missioncenter-glass
+Icon=io.missioncenter.MissionCenter.Glass
+Terminal=false
+Categories=Qt;KDE;System;Monitor;
+Keywords=CPU;GPU;Memory;Disk;Network;Processes;Services;Task Manager;System Monitor;Activity Monitor;
+StartupNotify=true
+SingleMainWindow=true
