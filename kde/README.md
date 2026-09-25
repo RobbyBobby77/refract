@@ -99,7 +99,7 @@ missioncenter_kde/
   fonts/            Inter (SIL OFL)
 native/             C++ helper wrapping KWindowEffects (blur-behind)
 magpie-bridge/      Rust JSON bridge to magpie
-tools/              patch-via-git.sh (lets magpie build without GNU patch)
+tools/              drive.py (UI smoke test: `tools/drive.py --smoke`), patch-via-git.sh
 ```
 
 The original GTK application in the repository root is untouched.
@@ -108,3 +108,5 @@ The original GTK application in the repository root is untouched.
 
 GPL-3.0-or-later, like Mission Center. Inter is © The Inter Project Authors, under the SIL Open
 Font License (`missioncenter_kde/fonts/Inter-LICENSE.txt`).
+
+Working on the code (or pointing an AI agent at it)? See [`AGENTS.md`](AGENTS.md).

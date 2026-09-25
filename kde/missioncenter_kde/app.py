@@ -90,7 +90,7 @@ class Session:
     def evaluate(self, expression: str):
         """Run a JS expression in Main.qml's scope (used by tests/screenshots)."""
         expr = QQmlExpression(self.engine.contextForObject(self.window), self.window, expression)
-        value = expr.evaluate()
+        value, _undefined = expr.evaluate()   # PySide returns (value, isUndefined)
         if expr.hasError():
             logging.warning("evaluate(%r): %s", expression, expr.error().toString())
         return value
