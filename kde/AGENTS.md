@@ -82,8 +82,10 @@ distribution — keep them in step with `../.github/README.md`.
    `/proc/<pid>/task/*/stat` (utime+stime over 20 s), including the bridge and magpie
    child processes. Measure with the display on: with it off, KWin suspends the window,
    rendering stops and the numbers look better than they are.
-6. `./install.sh` so the user's installed app picks up the change; commit and
-   `git push github main` (the GitHub remote is named `github`).
+6. The user runs the **Flatpak** (they removed the native install — don't run `./install.sh`):
+   `./flatpak/build.sh --install` so their installed app picks up the change, and test it with
+   `flatpak run io.github.RobbyBobby77.Refract`. Then commit and `git push github main` (the
+   GitHub remote is named `github`).
 7. If the UI changed visibly, refresh the README images: `python3 tools/screenshots.py dark`
    and `… light` (≈80 s each), then `python3 branding/make_social.py`. The product page is
    `../.github/README.md`; `README.md` here is the developer guide.
