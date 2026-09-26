@@ -13,6 +13,9 @@ ICON="$PREFIX/share/icons/hicolor/scalable/apps/$APP_ID.svg"
 
 refresh() {
     command -v update-desktop-database >/dev/null && update-desktop-database -q "$PREFIX/share/applications" || true
+    # KDE's icon cache notices theme changes by directory mtime; GTK has its own cache.
+    touch "$PREFIX/share/icons/hicolor" 2>/dev/null || true
+    command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -t -f "$PREFIX/share/icons/hicolor" 2>/dev/null || true
     command -v kbuildsycoca6 >/dev/null && kbuildsycoca6 --noincremental >/dev/null 2>&1 || true
 }
 

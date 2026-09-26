@@ -6,11 +6,13 @@ Sheet {
     id: sheet
 
     title: "Settings"
-    subtitle: "Mission Center · Liquid Glass edition"
+    subtitle: "Mission Center Glass " + AppVersion
+    signal aboutRequested()
     preferredWidth: 600
     preferredHeight: 700
 
     footer: [
+        PillButton { text: "About Mission Center Glass"; tint: Theme.graphite; onClicked: sheet.aboutRequested() },
         PillButton { text: "Done"; prominent: true; onClicked: sheet.close() }
     ]
 
@@ -174,7 +176,7 @@ Sheet {
                 }
                 SettingRow {
                     label: "Use KDE window decorations"
-                    hint: "Takes effect after restarting Mission Center"
+                    hint: "Takes effect after restarting Mission Center Glass"
                     last: true
                     Toggle { checked: Prefs.nativeDecorations; onToggled: c => Prefs.nativeDecorations = c }
                 }

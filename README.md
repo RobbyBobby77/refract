@@ -1,4 +1,4 @@
-> **Liquid Glass edition (KDE fork).** This fork adds a from-scratch KDE / Qt Quick frontend with
+> <img src="kde/branding/icon.svg" width="48" align="left"/> **Mission Center Glass (KDE fork).** This fork adds a from-scratch KDE / Qt Quick frontend with
 > an Apple-style Liquid Glass design in [`kde/`](kde/README.md) — run `kde/missioncenter-glass`
 > or install it with `kde/install.sh`. The original GTK application below is unchanged.
 

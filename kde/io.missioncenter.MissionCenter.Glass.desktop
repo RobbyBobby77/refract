@@ -2,7 +2,7 @@
 Type=Application
 Name=Mission Center Glass
 GenericName=System Monitor
-Comment=Monitor your CPU, memory, disk, network and GPU usage
+Comment=Your system at a glance: CPU, memory, disks, network and GPU, in Liquid Glass
 Exec=missioncenter-glass
 Icon=io.missioncenter.MissionCenter.Glass
 Terminal=false

@@ -1,4 +1,6 @@
-# Mission Center — Liquid Glass edition
+![Mission Center Glass](branding/banner.png)
+
+# Mission Center Glass
 
 A KDE / Qt Quick re-imagining of [Mission Center](https://gitlab.com/mission-center-devs/mission-center),
 designed as if Apple had built it: a see-through window over KWin's blur, floating Liquid Glass
@@ -97,6 +99,7 @@ missioncenter_kde/
   qml/MissionCenter design system (Theme, Glass*, Card, Graph…) and pages
   shaders/          GLSL sources + compiled .qsb packs (./build-shaders.sh to rebuild)
   fonts/            Inter (SIL OFL)
+branding/           icon + banner sources and the brand guide
 native/             C++ helper wrapping KWindowEffects (blur-behind)
 magpie-bridge/      Rust JSON bridge to magpie
 tools/              drive.py (UI smoke test: `tools/drive.py --smoke`), patch-via-git.sh

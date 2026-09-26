@@ -15,6 +15,7 @@ from PySide6.QtQml import QQmlApplicationEngine, QQmlExpression
 from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
 from PySide6.QtQuickControls2 import QQuickStyle
 
+from . import __version__
 from .bridge import Monitor
 from .effects import WindowEffects
 
@@ -23,7 +24,7 @@ APP_ID = "io.missioncenter.MissionCenter.Glass"
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="missioncenter-glass", description="Mission Center, in liquid glass.")
+    p = argparse.ArgumentParser(prog="missioncenter-glass", description="Mission Center Glass: your system at a glance, in Liquid Glass.")
     p.add_argument("--page", choices=["performance", "apps", "services"], help="page to open")
     p.add_argument("--device", help="performance device key to select, e.g. memory, disk:nvme0n1")
     p.add_argument("--theme", choices=["system", "light", "dark"], help="override the colour scheme")
@@ -57,7 +58,7 @@ class Session:
         self.app.setOrganizationName("MissionCenter")
         self.app.setOrganizationDomain("missioncenter.io")
         self.app.setApplicationName("MissionCenterGlass")
-        self.app.setApplicationDisplayName("Mission Center")
+        self.app.setApplicationDisplayName("Mission Center Glass")
         self.app.setDesktopFileName(APP_ID)
         self.app.setWindowIcon(QIcon(str(ROOT / "icons" / f"{APP_ID}.svg")))
 
@@ -74,6 +75,8 @@ class Session:
         ctx = self.engine.rootContext()
         ctx.setContextProperty("Monitor", self.monitor)
         ctx.setContextProperty("WindowEffects", self.effects)
+        ctx.setContextProperty("AppVersion", __version__.removesuffix("-glass"))
+        ctx.setContextProperty("AppIcon", QUrl.fromLocalFile(str(ROOT / "icons" / f"{APP_ID}.svg")).toString())
         ctx.setContextProperty("ShaderDir", QUrl.fromLocalFile(str(ROOT / "shaders") + "/").toString())
         ctx.setContextProperty("StartupOptions", {
             "page": args.page or "",

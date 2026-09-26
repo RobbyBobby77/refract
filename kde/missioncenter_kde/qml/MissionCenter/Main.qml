@@ -19,7 +19,7 @@ ApplicationWindow {
     minimumWidth: 940
     minimumHeight: 620
     visible: true
-    title: "Mission Center"
+    title: "Mission Center Glass"
     color: "transparent"
     background: null
     flags: frameless ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window
@@ -324,7 +324,8 @@ ApplicationWindow {
 
     // Popups ----------------------------------------------------------------
     GlassMenu { id: menu }
-    SettingsSheet { id: settingsSheet }
+    SettingsSheet { id: settingsSheet; onAboutRequested: { close(); aboutSheet.open() } }
+    AboutSheet { id: aboutSheet }
     ProcessDetailsSheet { id: procSheet; onQuitRequested: r => actions.quit(r) }
     ServiceDetailsSheet { id: svcSheet; onActionRequested: a => actions.serviceAction(svcSheet.row, a) }
     ConfirmSheet { id: confirm }

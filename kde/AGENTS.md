@@ -13,6 +13,7 @@ kde/
   install.sh                 per-user install to ~/.local (+ --uninstall); builds native parts
   build-native.sh            KWin blur helper (C++) + magpie + bridge (Rust)
   build-shaders.sh           GLSL -> .qsb (compiled packs are committed)
+  branding/                  icon + banner generators and the brand guide (branding/README.md)
   tools/drive.py             UI test harness / smoke test (see Verifying)
   tools/patch-via-git.sh     stands in for GNU patch when building magpie's nvtop
   native/                    libmcglass.so: C ABI over KWindowEffects (blur-behind)
