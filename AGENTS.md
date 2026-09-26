@@ -11,6 +11,9 @@ This repository is **Refract**, a fork of [Mission Center](https://gitlab.com/mi
 - `subprojects/magpie` (Mission Center's data engine) and `subprojects/graph-widget` are
   upstream submodules — don't commit changes inside them. Fetch them with
   `git submodule update --init --recursive`.
+- The GitHub landing page is **`.github/README.md`** (GitHub shows it in preference to the root
+  README). The root `README.md` is upstream's and stays byte-identical to it.
 
-Remotes: `origin` is upstream on GitLab (read-only); `github` is the fork
-(`RobbyBobby77/refract`, branch `liquid-glass-kde`).
+Remotes and branches: `github` is the fork (`RobbyBobby77/refract`); work on `main`, which tracks
+`github/main`. `origin` is upstream on GitLab (read-only); its `main` is tracked locally as
+`upstream-main`.

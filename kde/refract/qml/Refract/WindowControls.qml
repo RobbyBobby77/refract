@@ -10,7 +10,8 @@ Row {
     property bool mirrored: false
     spacing: 9
 
-    readonly property bool active: window.active
+    // screenshot/doc renders show the focused look
+    readonly property bool active: window.active || StartupOptions.screenshot
     HoverHandler { id: groupHover }
 
     Repeater {

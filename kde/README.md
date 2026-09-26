@@ -1,35 +1,9 @@
-![Refract](branding/banner.png)
+# Refract — developer guide
 
-# Refract
-
-**Refract** is a system monitor for KDE Plasma — a KDE / Qt Quick re-imagining of
-[Mission Center](https://gitlab.com/mission-center-devs/mission-center), designed as if Apple had built it: a see-through window over KWin's blur, floating Liquid Glass
-navigation, big confident type, soft translucent cards and springy motion throughout. Its data comes
-from Mission Center's own engine, magpie.
-
-![Performance](screenshots/performance-dark.png)
-
-| | |
-|---|---|
-| ![Apps](screenshots/apps-dark.png) | ![GPU](screenshots/gpu-dark.png) |
-| ![Services](screenshots/services-dark.png) | ![Light](screenshots/memory-light.png) |
-
-## What's inside
-
-Everything Mission Center shows, on a new frontend:
-
-- **Performance** — CPU (overall or per logical processor), memory and composition, every disk
-  (active time, transfer rate, volumes), Wi‑Fi/Ethernet (throughput, SSID, signal, band, addresses),
-  GPUs (utilization, dedicated + shared memory, clocks, power, temperature), fans and batteries.
-  Each device gets a live sparkline in the sidebar; graphs are smooth, GPU-rendered and have a
-  hover readout.
-- **Apps** — apps grouped from their systemd scopes and matched to `.desktop` entries, plus every
-  process (list or tree), with live CPU / memory / disk / GPU columns, heat shading, search,
-  Stop / Continue / Quit / Force Quit and a details sheet.
-- **Services** — system or user systemd units with status, startup type, PID and memory; start,
-  stop, restart, enable, disable (via polkit) and a journal viewer.
-- **KDE integration** — real blur-behind from KWin, Kirigami icons from your icon theme, your KDE
-  accent colour, System Settings shortcuts (network, power), native Wayland move/resize.
+This folder is **Refract**, a Liquid Glass system monitor for KDE Plasma forked from
+[Mission Center](https://gitlab.com/mission-center-devs/mission-center). For what it looks like and
+how to install it, see the [project page](../.github/README.md); this page is about how it's built.
+AI agents: start with [`AGENTS.md`](AGENTS.md).
 
 ## Design notes
 
@@ -60,31 +34,20 @@ disk info, battery history and Mission Center's app detection, at a fraction of 
 Without the native build, pure-Python collectors (`backend/collectors.py`, `processes.py`) take over;
 services always use systemd over D-Bus. Settings → Performance shows which engine is running.
 
-## Running
+## Running from a checkout
 
-Dependencies (use your distribution's packages so PySide6 and Kirigami share one Qt):
-
-| Distro | Packages |
-|---|---|
-| Fedora | `python3-pyside6 python3-psutil python3-dbus kf6-kirigami` |
-| Arch | `pyside6 python-psutil python-dbus kirigami` |
-| openSUSE | `python3-pyside6 python3-psutil python3-dbus-python kf6-kirigami` |
-| Debian/Ubuntu | `python3-pyside6.qtquick python3-pyside6.qtquickcontrols2 python3-psutil python3-dbus qml6-module-org-kde-kirigami` |
-
-Optional native parts — KWin blur and the magpie engine (Fedora package names):
-`cmake gcc-c++ qt6-qtbase-devel kf6-kwindowsystem-devel rust cargo gcc pkgconf-pkg-config libdrm-devel mesa-libgbm-devel systemd-devel`
+Install the runtime and (optional) build dependencies listed on the [project page](../.github/README.md#install), then:
 
 ```sh
-./build-native.sh                # optional: KWin blur helper + magpie + bridge
+./build-native.sh                # optional: KWin blur helper + magpie + refract-bridge
 ./bin/refract                    # run from the checkout
 ./install.sh                     # install for your user (~/.local); builds the native parts if it can
-./install.sh --uninstall
+python3 tools/drive.py --smoke   # UI smoke test: every page, sheet and device; fails on QML errors
+python3 tools/screenshots.py dark && python3 tools/screenshots.py light   # README screenshots
 ```
 
 Useful flags: `--page apps|services`, `--device memory|disk:nvme0n1|net:wlp…`,
-`--theme light|dark`, `--screenshot out.png`. Shortcuts: <kbd>Ctrl</kbd>+<kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>
-switch pages, <kbd>Ctrl</kbd>+<kbd>F</kbd> search, <kbd>Ctrl</kbd>+<kbd>,</kbd> settings,
-<kbd>Delete</kbd> quits the selected app, <kbd>Esc</kbd> clears the selection.
+`--theme light|dark`, `--screenshot out.png`.
 
 ## Layout
 
@@ -100,10 +63,10 @@ refract/            the app (Python package)
   shaders/          GLSL sources + compiled .qsb packs (./build-shaders.sh to rebuild)
   fonts/            Inter (SIL OFL)
 bin/refract         launcher for a source checkout
-branding/           icon + banner sources and the brand guide
+branding/           icon, banner and social-preview generators and the brand guide
 native/             C++ helper wrapping KWindowEffects (blur-behind)
 magpie-bridge/      Rust JSON bridge to magpie
-tools/              drive.py (UI smoke test: `tools/drive.py --smoke`), patch-via-git.sh
+tools/              drive.py (UI smoke test), screenshots.py (README images), patch-via-git.sh
 ```
 
 The original Mission Center GTK application in the repository root is untouched.

@@ -28,7 +28,8 @@ browser. Minimum comfortable size: 22 px.
 
 **Regenerating.** `python3 branding/make_icon.py && cp branding/icon.svg
 refract/icons/io.github.RobbyBobby77.Refract.svg`, then
-`python3 branding/make_banner.py`.
+`python3 branding/make_banner.py`; the GitHub social preview (1280×640) with
+`python3 branding/make_social.py` — upload it under the repo's Settings → Social preview.
 
 **App ID.** `io.github.RobbyBobby77.Refract` (desktop file, icon name, Wayland app id); the
 command is `refract`.

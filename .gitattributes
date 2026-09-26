@@ -3,3 +3,16 @@ flatpak/cargo-sources.json gitlab-generated
 
 flatpak/cargo-sources-magpie.json linguist-generated
 flatpak/cargo-sources-magpie.json gitlab-generated
+
+# GitHub's language bar should describe Refract (kde/), not the upstream
+# Mission Center app kept alongside it.
+src/** linguist-vendored
+resources/** linguist-vendored
+data/** linguist-vendored
+po/** linguist-vendored
+flatpak/** linguist-vendored
+snap/** linguist-vendored
+support/** linguist-vendored
+screenshots/** linguist-vendored
+subprojects/** linguist-vendored
+meson.build linguist-vendored
