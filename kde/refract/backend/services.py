@@ -5,6 +5,8 @@ import json
 import subprocess
 import time
 
+from .. import sandbox
+
 # Per-unit PID/memory lookups are a D-Bus round trip each; cap the total so a
 # slow bus can't hold up the poller (or application shutdown).
 _DETAIL_BUDGET_S = 1.5
@@ -13,9 +15,9 @@ _DETAIL_BUDGET_S = 1.5
 def _fallback(user: bool) -> list[dict]:
     prefix = ['systemctl'] + (['--user'] if user else [])
     try:
-        units = subprocess.run(prefix+['list-units','--type=service','--all','--output=json'],
+        units = subprocess.run(sandbox.host(prefix+['list-units','--type=service','--all','--output=json']),
                                capture_output=True,text=True,timeout=3)
-        files = subprocess.run(prefix+['list-unit-files','--type=service','--output=json'],
+        files = subprocess.run(sandbox.host(prefix+['list-unit-files','--type=service','--output=json']),
                                capture_output=True,text=True,timeout=3)
         loaded = json.loads(units.stdout) if units.returncode==0 else []
         installed = json.loads(files.stdout) if files.returncode==0 else []
@@ -92,7 +94,7 @@ def service_action(name: str, action: str, user: bool = False) -> tuple[bool,str
         return False,'Invalid service or action'
     command = ['systemctl']+(['--user'] if user else [])+[action,name]
     try:
-        result = subprocess.run(command,capture_output=True,text=True,timeout=90)
+        result = subprocess.run(sandbox.host(command),capture_output=True,text=True,timeout=90)
         return result.returncode==0,result.stderr.strip()
     except (OSError,subprocess.TimeoutExpired) as error:
         return False,str(error)
@@ -105,6 +107,6 @@ def service_logs(name: str, user: bool = False, lines: int = 200) -> str:
     try:
         command = ['journalctl']+(['--user'] if user else [])+['-u',name,'-n',str(max(0,int(lines))),
                                                              '--no-pager','-o','short-iso']
-        return subprocess.run(command,capture_output=True,text=True,timeout=10).stdout
+        return subprocess.run(sandbox.host(command),capture_output=True,text=True,timeout=10).stdout
     except (OSError,subprocess.TimeoutExpired,ValueError):
         return ''

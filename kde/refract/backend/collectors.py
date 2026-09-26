@@ -11,6 +11,8 @@ from pathlib import Path
 
 import psutil
 
+from .. import sandbox
+
 
 def _read(path: str | Path) -> str | None:
     try:
@@ -265,13 +267,13 @@ class SystemSampler:
             fields = dict((k.strip(), v.strip()) for k, v in (line.split(':',1) for line in s.splitlines() if ':' in line))
             cores.add((fields.get('physical id', '0'), fields.get('core id', fields.get('processor'))))
         os_name = None
-        for line in (_read('/etc/os-release') or '').splitlines():
+        for line in (_read(str(sandbox.host_path('/etc/os-release'))) or '').splitlines():
             if line.startswith('PRETTY_NAME='):
                 os_name = line.partition('=')[2].strip('"')
         desktop = None
-        if shutil.which('plasmashell'):
+        if sandbox.IN_FLATPAK or shutil.which('plasmashell'):
             try:
-                desktop = subprocess.run(['plasmashell','--version'], capture_output=True, text=True, timeout=2).stdout.strip() or None
+                desktop = subprocess.run(sandbox.host(['plasmashell','--version']), capture_output=True, text=True, timeout=2).stdout.strip() or None
                 if desktop:
                     desktop = desktop.replace('plasmashell', 'KDE Plasma')
             except (OSError, subprocess.TimeoutExpired):

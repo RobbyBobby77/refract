@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.RobbyBobby77.Refract</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Refract</name>
+  <summary>Your system at a glance, in Liquid Glass</summary>
+  <developer id="io.github.robbybobby77">
+    <name>RobbyBobby77</name>
+  </developer>
+  <description>
+    <p>
+      Refract is a system monitor for KDE Plasma, designed the way Apple would have made it:
+      a refractive Liquid Glass sidebar, toolbar, menus and sheets over a window that shows your
+      desktop through KWin's own blur.
+    </p>
+    <ul>
+      <li>Live graphs for every CPU core, memory, disks, Wi-Fi and Ethernet, GPUs, fans and batteries</li>
+      <li>Apps and processes with CPU, memory, disk and GPU use, search, a process tree, and Stop, Quit or Force Quit</li>
+      <li>System and user systemd services: status, start, stop, restart, enable, disable and logs</li>
+      <li>Your icon theme, accent colour and wallpaper; light, dark or automatic appearance</li>
+    </ul>
+    <p>
+      Refract is a modified version of Mission Center and uses its data engine, magpie. It is an
+      independent project and is not affiliated with or endorsed by the Mission Center developers.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.RobbyBobby77.Refract.desktop</launchable>
+  <url type="homepage">https://github.com/RobbyBobby77/refract</url>
+  <url type="bugtracker">https://github.com/RobbyBobby77/refract/issues</url>
+  <url type="vcs-browser">https://github.com/RobbyBobby77/refract</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/performance-dark.png</image>
+      <caption>CPU utilization beside a glass sidebar of live device graphs</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/apps-dark.png</image>
+      <caption>Apps and processes</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/services-dark.png</image>
+      <caption>systemd services</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/memory-light.png</image>
+      <caption>Memory, in light mode</caption>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1"/>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+  <releases>
+    <release version="1.1.0" date="2026-09-26">
+      <description>
+        <p>Easier installation: a Flatpak, and install.sh --deps to install the dependencies.
+        Network adapters now show their model names.</p>
+      </description>
+    </release>
+    <release version="1.0.0" date="2026-09-26">
+      <description>
+        <p>First release of Refract.</p>
+      </description>
+    </release>
+  </releases>
+</component>

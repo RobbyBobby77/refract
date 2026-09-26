@@ -5,11 +5,20 @@
 //! stdout: one JSON-encoded `magpie.ipc.Response` per line, in order; transport
 //!         failures come back as `{"body":{"error":{"message":"…"}}}`
 //!
+//! usage: refract-bridge [MAGPIE [ARGS…]]
+//!
+//! MAGPIE is the command that starts magpie (default: $MC_MAGPIE, else magpie
+//! next to this executable); `--addr ipc://…` is appended to it. In Flatpak it
+//! is a `flatpak-spawn --host …` command line, and $REFRACT_SOCKET_DIR names a
+//! directory both sides can see for the socket (default: $XDG_RUNTIME_DIR).
+//!
 //! The bridge exits when stdin closes. magpie is started with the bridge as its
-//! parent and dies with it (magpie sets PR_SET_PDEATHSIG itself).
+//! parent and dies with it (the child gets PR_SET_PDEATHSIG; magpie also sets it
+//! itself, and flatpak-spawn --watch-bus stops the host side).
 
 use std::ffi::{c_void, CStr, CString};
 use std::io::{BufRead, Write};
+use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
@@ -91,6 +100,16 @@ impl Drop for Client {
     }
 }
 
+/// The command that starts magpie: our arguments if given, else the binary.
+fn magpie_command() -> Vec<String> {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.is_empty() {
+        vec![magpie_path().to_string_lossy().into_owned()]
+    } else {
+        args
+    }
+}
+
 /// magpie location: $MC_MAGPIE, else next to this executable.
 fn magpie_path() -> PathBuf {
     if let Some(path) = std::env::var_os("MC_MAGPIE") {
@@ -108,6 +127,7 @@ fn magpie_path() -> PathBuf {
 }
 
 struct Engine {
+    command: Vec<String>,
     addr: CString,
     socket_path: PathBuf,
     child: Option<Child>,
@@ -116,31 +136,49 @@ struct Engine {
 
 impl Engine {
     fn new() -> Self {
-        let runtime = std::env::var_os("XDG_RUNTIME_DIR")
+        let runtime = std::env::var_os("REFRACT_SOCKET_DIR")
+            .or_else(|| std::env::var_os("XDG_RUNTIME_DIR"))
             .map(PathBuf::from)
             .unwrap_or_else(std::env::temp_dir);
         let socket_path = runtime.join(format!("refract-magpie-{}.ipc", std::process::id()));
         let addr = CString::new(format!("ipc://{}", socket_path.display())).unwrap();
-        Self { addr, socket_path, child: None, client: None }
+        Self { command: magpie_command(), addr, socket_path, child: None, client: None }
     }
 
     fn start(&mut self) -> Result<(), String> {
         self.client = None;
-        if let Some(mut child) = self.child.take() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
+        self.stop();
         let _ = std::fs::remove_file(&self.socket_path);
-        let child = Command::new(magpie_path())
+        let mut command = Command::new(&self.command[0]);
+        command
+            .args(&self.command[1..])
             .arg("--addr")
             .arg(self.addr.to_str().unwrap())
             .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .spawn()
-            .map_err(|e| format!("start magpie: {e}"))?;
+            .stdout(Stdio::null());
+        // SAFETY: prctl is async-signal-safe.
+        unsafe {
+            command.pre_exec(|| {
+                libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM);
+                Ok(())
+            });
+        }
+        let child = command.spawn().map_err(|e| format!("start magpie: {e}"))?;
         self.child = Some(child);
         self.client = Some(Client::connect(&self.addr)?);
         Ok(())
+    }
+
+    /// SIGTERM first so flatpak-spawn can pass it on to the host side.
+    fn stop(&mut self) {
+        let Some(mut child) = self.child.take() else { return };
+        unsafe { libc::kill(child.id() as libc::pid_t, libc::SIGTERM) };
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while matches!(child.try_wait(), Ok(None)) && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        let _ = child.kill();
+        let _ = child.wait();
     }
 
     fn alive(&mut self) -> bool {
@@ -166,10 +204,7 @@ impl Engine {
 impl Drop for Engine {
     fn drop(&mut self) {
         self.client = None;
-        if let Some(mut child) = self.child.take() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
+        self.stop();
         let _ = std::fs::remove_file(&self.socket_path);
     }
 }

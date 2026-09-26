@@ -9,8 +9,10 @@ from urllib.parse import unquote, urlparse
 
 from PySide6.QtCore import QUrl
 
+from .sandbox import host_path
+
 _IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".avif", ".jxl", ".bmp"}
-_FALLBACK = Path("/usr/share/wallpapers/Next")
+_FALLBACK = host_path("/usr/share/wallpapers/Next")
 CONFIG = Path.home() / ".config" / "plasma-org.kde.plasma.desktop-appletsrc"
 
 
@@ -20,7 +22,7 @@ def _to_path(value: str) -> Path | None:
         return None
     if value.startswith("file:"):
         value = unquote(urlparse(value).path)
-    p = Path(os.path.expanduser(value))
+    p = host_path(os.path.expanduser(value))
     return p if p.exists() else None
 
 

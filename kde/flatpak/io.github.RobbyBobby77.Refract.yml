@@ -1,0 +1,93 @@
+# Flatpak manifest for Refract. Build with ./build.sh (next to this file),
+# which produces refract.flatpak, a single-file bundle.
+#
+# The UI runs in the sandbox on KDE's runtime with Qt's PySide BaseApp. Like
+# Mission Center's Flatpak, the data engine (magpie) and the commands that act
+# on the system (systemctl, journalctl, kill, pkexec, xdg-open…) run on the host
+# through flatpak-spawn: see refract/sandbox.py.
+#
+# The build downloads Rust crates, nvtop (for magpie) and Python packages, so
+# modules that need them have network access. Fine for our own bundles; Flathub
+# would need them pinned as sources instead.
+id: io.github.RobbyBobby77.Refract
+runtime: org.kde.Platform
+runtime-version: '6.11'
+sdk: org.kde.Sdk
+base: io.qt.PySide.BaseApp
+base-version: '6.11'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: refract
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # magpie and system commands run on the host
+  - --talk-name=org.freedesktop.Flatpak
+  # services: systemd on the system and user buses
+  - --system-talk-name=org.freedesktop.systemd1
+  - --talk-name=org.freedesktop.systemd1
+  # the desktop wallpaper, for the Wallpaper background
+  - --talk-name=org.kde.plasmashell
+  - --filesystem=host-os:ro
+  - --filesystem=xdg-pictures:ro
+  - --filesystem=xdg-data/wallpapers:ro
+  - --filesystem=xdg-config/plasma-org.kde.plasma.desktop-appletsrc:ro
+  # KDE colours and accent
+  - --filesystem=xdg-config/kdeglobals:ro
+  # icons of installed apps (system, user and Flatpak ones)
+  - --filesystem=xdg-data/icons:ro
+  - --filesystem=xdg-data/flatpak/exports/share:ro
+  - --filesystem=/var/lib/flatpak/exports/share:ro
+  - --env=XDG_DATA_DIRS=/app/share:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share:/run/host/usr/share:/var/lib/flatpak/exports/share:~/.local/share/flatpak/exports/share
+
+build-options:
+  env:
+    # We use neither QtWebEngine nor numpy: drop them from the BaseApp.
+    BASEAPP_REMOVE_WEBENGINE: '1'
+    BASEAPP_DISABLE_NUMPY: '1'
+
+cleanup-commands:
+  - /app/cleanup-BaseApp.sh
+  # Only needed to build PySide itself or for PyOpenGL, which we don't use.
+  - rm -rf /app/lib/libclang* /app/lib/python3*/site-packages/shiboken6_generator*
+  - pip3 uninstall -y pyopengl
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /lib/cmake
+  - '*.a'
+
+modules:
+  - name: python-deps
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - pip3 install --prefix=/app --no-cache-dir psutil==7.2.2 dbus-python==1.4.0
+
+  - name: refract
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      build-args:
+        - --share=network
+      env:
+        CARGO_HOME: /run/build/refract/cargo
+    build-commands:
+      - kde/flatpak/install-app.sh
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .flatpak-builder
+          - target
+          - subprojects/magpie/target
+          - subprojects/graph-widget/target
+          - kde/magpie-bridge/target
+          - kde/native/build
+          - kde/flatpak/refract.flatpak

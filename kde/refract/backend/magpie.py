@@ -19,6 +19,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from .. import sandbox
+
 log = logging.getLogger(__name__)
 
 _PKG = Path(__file__).resolve().parent.parent
@@ -69,9 +71,20 @@ class MagpieClient:
     sampler thread may both use it."""
 
     def __init__(self, bridge: Path, magpie: Path) -> None:
-        env = dict(os.environ, MC_MAGPIE=str(magpie))
+        # Mission Center's hardware database (network adapter names), if built.
+        hw_db = next((f for f in (magpie.parent / "hw.db", _REPO_KDE / "native" / "build" / "hw.db")
+                      if f.exists()), None)
+        env = dict(os.environ)
+        if sandbox.IN_FLATPAK:
+            command = sandbox.magpie_command(magpie, hw_db)
+            if sandbox.socket_dir():
+                env["REFRACT_SOCKET_DIR"] = sandbox.socket_dir()
+        else:
+            command = [str(magpie)]
+            if hw_db:
+                env.setdefault("MC_MAGPIE_HW_DB", str(hw_db))
         self._proc = subprocess.Popen(
-            [str(bridge)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            [str(bridge), *command], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, text=True, bufsize=1, env=env)
         self._lock = threading.Lock()
 
@@ -341,26 +354,44 @@ class MagpieProcessSampler:
         self._resolves = 0
         self._icon_dir = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "refract" / "icons"
 
-    def _user(self, pid: int, name: str) -> str:
-        cached = self._owners.get(pid)
-        if cached and cached[0] == name:
-            return cached[1]
-        try:
-            uid = os.stat(f"/proc/{pid}").st_uid
-        except OSError:
-            return ""
-        if uid not in self._users:
-            import pwd
+    def _lookup_owners(self, procs: list[tuple[int, str]]) -> None:
+        """Fill in owners for processes not seen before (pid reuse: name changed)."""
+        new = [(pid, name) for pid, name in procs
+               if pid not in self._owners or self._owners[pid][0] != name]
+        if not new:
+            return
+        if sandbox.IN_FLATPAK:
+            # /proc in here only shows the sandbox: ask the host, one call for all.
             try:
-                self._users[uid] = pwd.getpwuid(uid).pw_name
-            except KeyError:
-                self._users[uid] = str(uid)
-        self._owners[pid] = (name, self._users[uid])
-        return self._users[uid]
+                out = subprocess.run(
+                    sandbox.host(["stat", "-c", "%U %n", *(f"/proc/{pid}" for pid, _ in new)]),
+                    capture_output=True, text=True, timeout=5).stdout
+            except (OSError, subprocess.TimeoutExpired):
+                return
+            users = {int(path.rsplit("/", 1)[1]): user
+                     for user, _, path in (line.partition(" ") for line in out.splitlines())
+                     if path.startswith("/proc/") and path[6:].isdigit()}
+            for pid, name in new:
+                if pid in users:
+                    self._owners[pid] = (name, users[pid])
+            return
+        import pwd
+        for pid, name in new:
+            try:
+                uid = os.stat(f"/proc/{pid}").st_uid
+            except OSError:
+                continue
+            if uid not in self._users:
+                try:
+                    self._users[uid] = pwd.getpwuid(uid).pw_name
+                except KeyError:
+                    self._users[uid] = str(uid)
+            self._owners[pid] = (name, self._users[uid])
 
     def sample(self) -> list[dict[str, Any]]:
         reply = _dig(self._client.call({"get_processes": {"request": {"process_map": {}}}}),
                      "processes", "response", "processes", "processes") or {}
+        self._lookup_owners([(p["pid"], p.get("name") or "") for p in reply.values()])
         rows = []
         for p in reply.values():
             stats = p.get("usage_stats") or {}
@@ -369,7 +400,7 @@ class MagpieProcessSampler:
             rows.append({
                 "pid": pid, "ppid": p.get("parent", 0), "name": p.get("name") or "?",
                 "cmdline": " ".join(p.get("cmd") or []), "exe": p.get("exe") or None,
-                "user": self._user(pid, p.get("name") or ""),
+                "user": self._owners.get(pid, ("", ""))[1],
                 "state": _PROC_STATE.get(p.get("state"), "Unknown"),
                 "threads": p.get("task_count", 0), "nice": None, "start_time": None,
                 # magpie reports percent of one core; the UI uses the whole machine

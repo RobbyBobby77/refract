@@ -53,8 +53,38 @@
 
 ## Install
 
-Refract runs on KDE Plasma 6 (developed and tested on Wayland). Install the dependencies from your distribution
-so PySide6 and Kirigami share the same Qt:
+Refract runs on KDE Plasma 6 (developed and tested on Wayland). There are two ways to install it.
+
+### Flatpak — one file, any distribution
+
+Get `refract.flatpak` from the [latest release](https://github.com/RobbyBobby77/refract/releases/latest)
+and open it with Discover, or run:
+
+```sh
+flatpak install --user refract.flatpak
+```
+
+Flatpak brings everything Refract needs, including KDE's runtime from Flathub. To build the
+bundle yourself from a clone: `kde/flatpak/build.sh` (add `--install` to install it too).
+The sandbox can't see your system's processes, so Refract runs its data engine and system actions
+(stopping apps, managing services) outside it, as Mission Center's Flatpak does.
+
+### From source — one command
+
+```sh
+git clone https://github.com/RobbyBobby77/refract.git
+cd refract/kde
+./install.sh --deps     # installs the packages it needs (asks for your password), then Refract
+```
+
+`--deps` knows Fedora, Arch, openSUSE and Debian/Ubuntu. Refract itself installs for your user
+under `~/.local`, and fetches Mission Center's data engine on the way. To update, pull and run
+`./install.sh` again; to remove it, `./install.sh --uninstall`.
+
+<details>
+<summary>Installing the dependencies yourself</summary>
+
+Install these from your distribution so PySide6 and Kirigami share the same Qt:
 
 | Distribution | Packages |
 |---|---|
@@ -71,17 +101,12 @@ sudo dnf install cmake gcc-c++ qt6-qtbase-devel kf6-kwindowsystem-devel \
                  rust cargo gcc pkgconf-pkg-config libdrm-devel mesa-libgbm-devel systemd-devel
 ```
 
-Then:
+Then run `./install.sh`. Without the toolchain, Refract still runs — with a solid window
+background and its built-in data collectors.
 
-```sh
-git clone --recurse-submodules https://github.com/RobbyBobby77/refract.git
-cd refract/kde
-./install.sh            # installs for your user under ~/.local — no root needed
-```
+</details>
 
-Launch **Refract** from your application launcher, or run `refract`. To update, pull and run
-`./install.sh` again; to remove it, `./install.sh --uninstall`. Without the toolchain, Refract
-still runs — with a solid window background and its built-in data collectors.
+Launch **Refract** from your application launcher, or run `refract`.
 
 **Shortcuts:** <kbd>Ctrl</kbd>+<kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> switch pages ·
 <kbd>Ctrl</kbd>+<kbd>F</kbd> search · <kbd>Ctrl</kbd>+<kbd>,</kbd> settings ·

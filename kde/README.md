@@ -36,10 +36,11 @@ services always use systemd over D-Bus. Settings → Performance shows which eng
 
 ## Running from a checkout
 
-Install the runtime and (optional) build dependencies listed on the [project page](../.github/README.md#install), then:
+Install the runtime and (optional) build dependencies listed on the [project page](../.github/README.md#install)
+— or let `./install.sh --deps` install them with your distribution's package manager — then:
 
 ```sh
-./build-native.sh                # optional: KWin blur helper + magpie + refract-bridge
+./build-native.sh                # optional: KWin blur helper + magpie + refract-bridge + hw.db
 ./bin/refract                    # run from the checkout
 ./install.sh                     # install for your user (~/.local); builds the native parts if it can
 python3 tools/drive.py --smoke   # UI smoke test: every page, sheet and device; fails on QML errors
@@ -48,6 +49,26 @@ python3 tools/screenshots.py dark && python3 tools/screenshots.py light   # READ
 
 Useful flags: `--page apps|services`, `--device memory|disk:nvme0n1|net:wlp…`,
 `--theme light|dark`, `--screenshot out.png`.
+
+## Flatpak
+
+`flatpak/build.sh` builds Refract as a Flatpak and writes `flatpak/refract.flatpak`, a single-file
+bundle that installs on any distribution and fetches KDE's runtime from Flathub
+(`--install` also installs it for you). It sets up flatpak-builder and the SDKs if needed;
+build files go to `~/.cache/refract-flatpak`.
+
+- The UI runs in the sandbox on `org.kde.Platform` 6.11 with Qt's PySide6 BaseApp;
+  `flatpak/install-app.sh` builds and installs everything into `/app` in the same layout as
+  `install.sh`.
+- A system monitor has to see the real system, so — like Mission Center's Flatpak — magpie runs
+  **on the host** through `flatpak-spawn --host`. It was built against the runtime, so it runs under
+  the runtime's own dynamic loader and libraries, read from their host location in
+  `/.flatpak-info`; that makes it independent of the host's glibc. The bridge stays in the sandbox
+  and they meet on a socket in `$XDG_RUNTIME_DIR/app/<app id>`, which both sides can see.
+- `/proc` in the sandbox only shows the sandbox, and signals can't cross it: process owners,
+  process details, Stop/Quit/Force Quit, `systemctl`, `journalctl` and the programs Refract opens
+  all run on the host too. `refract/sandbox.py` has the helpers (`host()`, `host_path()`); outside
+  Flatpak they change nothing.
 
 ## Layout
 
@@ -58,6 +79,7 @@ refract/            the app (Python package)
   models.py         sidebar devices, apps/process tree, services (positional list models)
   wallpaper.py      finds the Plasma wallpaper
   effects.py        KWin blur-behind via the native helper
+  sandbox.py        Flatpak: running commands and finding files on the host
   backend/          magpie adapter + fallback collectors for /proc, /sys, NetworkManager, systemd
   qml/Refract/      design system (Theme, Glass*, Card, Graph…) and pages
   shaders/          GLSL sources + compiled .qsb packs (./build-shaders.sh to rebuild)
@@ -66,6 +88,7 @@ bin/refract         launcher for a source checkout
 branding/           icon, banner and social-preview generators and the brand guide
 native/             C++ helper wrapping KWindowEffects (blur-behind)
 magpie-bridge/      Rust JSON bridge to magpie
+flatpak/            Flatpak manifest, build.sh (→ refract.flatpak), install-app.sh
 tools/              drive.py (UI smoke test), screenshots.py (README images), patch-via-git.sh
 ```
 

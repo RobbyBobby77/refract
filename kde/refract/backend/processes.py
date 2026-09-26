@@ -10,6 +10,7 @@ import subprocess
 import time
 from pathlib import Path
 
+from .. import sandbox
 from .collectors import _read, _entries
 
 _PAGE = os.sysconf('SC_PAGE_SIZE')
@@ -289,6 +290,42 @@ def _start_ticks(pid: int) -> int | None:
         return None
 
 
+# In Flatpak, /proc only shows the sandbox and signals can't reach host
+# processes, so these do the same steps on the host (LC_ALL=C, for stderr).
+_HOST_SIGNAL = r"""
+if [ -n "$3" ]; then
+    s=$(cat "/proc/$1/stat" 2>/dev/null) || exit 3
+    set -- "$1" "$2" "$3" ${s##*) }
+    [ "${23}" = "$3" ] || exit 3
+fi
+kill -s "$2" "$1"
+"""
+_HOST_DETAILS = r"""
+p=/proc/$1
+for f in stat statm status cgroup; do printf '\036%s\037' $f; cat $p/$f; done
+printf '\036cmdline\037'; tr '\000' ' ' < $p/cmdline
+printf '\036exe\037'; readlink $p/exe
+printf '\036cwd\037'; readlink $p/cwd
+printf '\036fds\037'; ls -A $p/fd >/dev/null && ls -A $p/fd | wc -l
+printf '\036user\037'; stat -c %U $p
+printf '\036uptime\037'; cat /proc/uptime
+"""
+
+
+def _host_signal(pid: int, sig: str, start_ticks: int | None) -> tuple[bool,str]:
+    args = ['sh','-c',_HOST_SIGNAL,'sh',str(pid),sig,'' if start_ticks is None else str(start_ticks)]
+    try:
+        result = subprocess.run(sandbox.host(args,env={'LC_ALL':'C'}),capture_output=True,text=True,timeout=10)
+        if result.returncode==3 or 'No such process' in result.stderr:
+            return False,'The process has already exited'
+        if 'not permitted' in result.stderr:
+            result = subprocess.run(sandbox.host(['pkexec','kill',f'-{sig}',str(pid)]),
+                                    capture_output=True,text=True,timeout=60)
+        return result.returncode==0,result.stderr.strip()
+    except (OSError,subprocess.TimeoutExpired) as error:
+        return False,str(error)
+
+
 def signal_process(pid: int, sig: str, start_ticks: int | None = None) -> tuple[bool,str]:
     """Signal one process, using polkit authorization only when necessary.
 
@@ -298,6 +335,8 @@ def signal_process(pid: int, sig: str, start_ticks: int | None = None) -> tuple[
     """
     if sig not in {'TERM','KILL','STOP','CONT'} or not isinstance(pid,int) or pid<=0:
         return False,'Invalid PID or signal'
+    if sandbox.IN_FLATPAK:
+        return _host_signal(pid,sig,start_ticks)
     signum = getattr(signal,'SIG'+sig)
     try:
         pidfd = os.pidfd_open(pid)
@@ -328,42 +367,62 @@ def signal_process(pid: int, sig: str, start_ticks: int | None = None) -> tuple[
             os.close(pidfd)
 
 
+def _proc_files(pid: int) -> dict[str,str | None]:
+    """The /proc entries process_details needs (links resolved, fd/ counted)."""
+    if sandbox.IN_FLATPAK:
+        try:
+            out = subprocess.run(sandbox.host(['sh','-c',_HOST_DETAILS,'sh',str(pid)]),
+                                 capture_output=True,text=True,errors='replace',timeout=5).stdout
+        except (OSError,subprocess.TimeoutExpired):
+            return {}
+        files = dict(part.split('\037',1) for part in out.split('\036') if '\037' in part)
+        return {k:(v.strip() if k in ('cmdline','exe','cwd','fds','user') else v) or None for k,v in files.items()}
+    base = f'/proc/{pid}'
+    files: dict[str,str | None] = {name:_read(f'{base}/{name}') for name in ('stat','statm','status','cgroup')}
+    files['uptime'] = _read('/proc/uptime')
+    for link in ('exe','cwd'):
+        try:
+            files[link] = os.readlink(f'{base}/{link}')
+        except OSError:
+            pass
+    try:
+        cmd = Path(f'{base}/cmdline').read_bytes()
+        files['cmdline'] = ' '.join(x.decode(errors='replace') for x in cmd.split(b'\0') if x)
+    except OSError:
+        pass
+    try:
+        files['fds'] = str(len(os.listdir(f'{base}/fd')))
+    except OSError:
+        pass
+    return files
+
+
 def process_details(pid: int) -> dict:
     """Return extended process data; unavailable fields are None."""
     keys = ('ppid','name','exe','cmdline','cwd','user','state','threads','nice','start_time',
             'cgroup','open_files','memory_rss','memory_shared','memory_swap')
     data = {'pid':pid,**dict.fromkeys(keys)}
     try:
-        raw = _read(f'/proc/{pid}/stat')
+        files = _proc_files(pid)
+        raw = files.get('stat')
         if not raw:
             return data
         data['name'] = raw[raw.index('(')+1:raw.rindex(')')]
         parts = raw[raw.rindex(')')+2:].split()
         data.update(ppid=int(parts[1]),state=_STATE.get(parts[0],parts[0]),nice=int(parts[16]),
-                    threads=int(parts[17]),start_time=time.time()-float((_read('/proc/uptime') or '0').split()[0])+int(parts[19])/_HZ)
-        statm = (_read(f'/proc/{pid}/statm') or '').split()
+                    threads=int(parts[17]),start_time=time.time()-float((files.get('uptime') or '0').split()[0])+int(parts[19])/_HZ)
+        statm = (files.get('statm') or '').split()
         if len(statm)>2:
             data['memory_rss'],data['memory_shared'] = int(statm[1])*_PAGE,int(statm[2])*_PAGE
-        status = _read(f'/proc/{pid}/status') or ''
+        status = files.get('status') or ''
         swap = re.search(r'^VmSwap:\s*(\d+)',status,re.M)
         data['memory_swap'] = int(swap[1])*1024 if swap else None
         uid = re.search(r'^Uid:\s*(\d+)',status,re.M)
-        data['user'] = _uid_name(int(uid[1]),{}) if uid else None
-        for field,link in (('exe','exe'),('cwd','cwd')):
-            try:
-                data[field] = os.readlink(f'/proc/{pid}/{link}')
-            except OSError:
-                pass
-        try:
-            cmd = Path(f'/proc/{pid}/cmdline').read_bytes()
-            data['cmdline'] = ' '.join(x.decode(errors='replace') for x in cmd.split(b'\0') if x)
-        except OSError:
-            pass
-        data['cgroup'] = next((line[3:] for line in (_read(f'/proc/{pid}/cgroup') or '').splitlines() if line.startswith('0::')),None)
-        try:
-            data['open_files'] = len(os.listdir(f'/proc/{pid}/fd'))
-        except OSError:
-            pass
+        data['user'] = files.get('user') or (_uid_name(int(uid[1]),{}) if uid else None)
+        data.update(exe=files.get('exe'),cwd=files.get('cwd'),cmdline=files.get('cmdline'))
+        data['cgroup'] = next((line[3:] for line in (files.get('cgroup') or '').splitlines() if line.startswith('0::')),None)
+        if files.get('fds'):
+            data['open_files'] = int(files['fds'])
     except (OSError,ValueError,IndexError):
         pass
     return data

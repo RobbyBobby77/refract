@@ -27,7 +27,12 @@ if command -v cargo >/dev/null; then
     fi
     cargo build --release --manifest-path ../subprojects/magpie/Cargo.toml
     cargo build --release --manifest-path magpie-bridge/Cargo.toml
-    echo "built magpie and refract-bridge"
+    # magpie's hardware database (network adapter names), next to the helper.
+    hwdb=../subprojects/magpie/platform-linux/hwdb
+    if [ ! -f native/build/hw.db ] || [ "$hwdb/20-pci-vendor-model.hwdb" -nt native/build/hw.db ]; then
+        python3 "$hwdb/generate_hwdb.py" -o native/build "$hwdb"/*.hwdb
+    fi
+    echo "built magpie, refract-bridge and hw.db"
 else
     echo "cargo not found: skipping magpie (the Python collectors will be used)"
 fi

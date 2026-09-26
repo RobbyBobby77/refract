@@ -28,7 +28,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QGuiApplication
 
 from .models import DeviceModel, ProcessModel, ServiceModel
-from . import wallpaper
+from . import sandbox, wallpaper
 
 log = logging.getLogger(__name__)
 
@@ -564,8 +564,23 @@ class Monitor(QObject):
     @Slot(str, "QVariantList")
     def launch(self, program: str, args: list[str]) -> None:
         """Start a helper program (System Settings modules, file manager…)."""
+        if sandbox.IN_FLATPAK:
+            threading.Thread(target=self._launch_on_host, args=(program, args), daemon=True).start()
+            return
         if shutil.which(program) is None:
             self.actionFinished.emit(program, False, f"{program} is not installed")
             return
         subprocess.Popen([program, *map(str, args)], start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def _launch_on_host(self, program: str, args: list[str]) -> None:
+        try:
+            found = subprocess.run(sandbox.host(["sh", "-c", 'command -v "$1"', "sh", program]),
+                                   capture_output=True, timeout=5).returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            found = False
+        if not found:
+            self.actionFinished.emit(program, False, f"{program} is not installed")
+            return
+        subprocess.Popen(sandbox.host([program, *map(str, args)]), start_new_session=True,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
