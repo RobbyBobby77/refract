@@ -7,6 +7,11 @@
 set -e
 cd "$(dirname "$(readlink -f "$0")")"
 
+# CMake pins its build dir to absolute paths; start over if the checkout moved.
+cache=native/build/CMakeCache.txt
+if [ -f "$cache" ] && ! grep -qx "CMAKE_HOME_DIRECTORY:INTERNAL=$PWD/native" "$cache"; then
+    rm -rf native/build
+fi
 cmake -S native -B native/build -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build native/build --parallel
 echo "built native/build/librefract_effects.so"
