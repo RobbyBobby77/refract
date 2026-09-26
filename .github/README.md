@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../kde/branding/banner.png" alt="Refract — your system at a glance, in Liquid Glass, for KDE Plasma" width="900"/>
+  <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/branding/banner.png" alt="Refract — your system at a glance, in Liquid Glass, for KDE Plasma" width="900"/>
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="../kde/screenshots/performance-dark.png" alt="Refract's Performance page: a glass sidebar of live device graphs beside CPU utilization, stats and processor details" width="900"/>
+  <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/performance-dark.png" alt="Refract's Performance page: a glass sidebar of live device graphs beside CPU utilization, stats and processor details" width="900"/>
 </p>
 
 ## Why Refract
@@ -38,16 +38,16 @@
 
 <table>
   <tr>
-    <td><img src="../kde/screenshots/apps-dark.png" alt="Apps page with a selected app and the floating action bar"/></td>
-    <td><img src="../kde/screenshots/gpu-dark.png" alt="GPU page with utilization, memory and video-engine graphs"/></td>
+    <td><img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/apps-dark.png" alt="Apps page with a selected app and the floating action bar"/></td>
+    <td><img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/gpu-dark.png" alt="GPU page with utilization, memory and video-engine graphs"/></td>
   </tr>
   <tr>
-    <td><img src="../kde/screenshots/services-dark.png" alt="Services page listing systemd units"/></td>
-    <td><img src="../kde/screenshots/memory-light.png" alt="Memory page in light mode"/></td>
+    <td><img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/services-dark.png" alt="Services page listing systemd units"/></td>
+    <td><img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/memory-light.png" alt="Memory page in light mode"/></td>
   </tr>
   <tr>
-    <td><img src="../kde/screenshots/settings-light.png" alt="Settings sheet"/></td>
-    <td><img src="../kde/screenshots/about-dark.png" alt="About Refract"/></td>
+    <td><img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/settings-light.png" alt="Settings sheet"/></td>
+    <td><img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/about-dark.png" alt="About Refract"/></td>
   </tr>
 </table>
 
@@ -99,8 +99,8 @@ process list refreshes; decimal or binary units, bits or bytes, °C or °F.
 Refract is written in Python and QML on Qt 6 (PySide6), with Kirigami for KDE integration.
 The glass is a custom GLSL material; a small C++ helper asks KWin for blur-behind, and a small
 Rust bridge talks to **magpie**, Mission Center's data engine, which Refract uses unmodified.
-Details for developers are in [`kde/README.md`](../kde/README.md) and, for AI agents,
-[`AGENTS.md`](../AGENTS.md).
+Details for developers are in [`kde/README.md`](https://github.com/RobbyBobby77/refract/blob/main/kde/README.md) and, for AI agents,
+[`AGENTS.md`](https://github.com/RobbyBobby77/refract/blob/main/AGENTS.md).
 
 ## Credits & licence
 
@@ -111,6 +111,6 @@ a new Qt Quick one and added a bridge to its magpie engine. **Refract is an inde
 and is not affiliated with or endorsed by the Mission Center developers.**
 
 Refract is licensed under the **GNU General Public License v3.0 or later**, like Mission Center —
-see [`COPYING`](../COPYING). The Inter typeface is © The Inter Project Authors, under the SIL Open
+see [`COPYING`](https://github.com/RobbyBobby77/refract/blob/main/COPYING). The Inter typeface is © The Inter Project Authors, under the SIL Open
 Font License. The screenshots show KDE's *Nuvole* wallpaper. The original Mission Center app and
 its README remain in this repository, unchanged.
