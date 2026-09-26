@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 
-// "About Mission Center Glass": the brand, the version, and the credits.
+// "About Refract": the brand, the version, and the credits.
 Sheet {
     id: sheet
 
@@ -11,7 +11,7 @@ Sheet {
         PillButton {
             text: "GitHub"
             tint: Theme.graphite
-            onClicked: Monitor.launch("xdg-open", ["https://github.com/RobbyBobby77/mission-center-glass"])
+            onClicked: Monitor.launch("xdg-open", ["https://github.com/RobbyBobby77/refract"])
         },
         PillButton {
             text: "Mission Center"
@@ -48,58 +48,47 @@ Sheet {
             }
         }
 
-        Row {
+        // the wordmark: "Refract" filled with the brand gradient (blue -> violet -> pink)
+        Item {
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 10
+            width: wordmark.implicitWidth
+            height: wordmark.implicitHeight
             Text {
-                text: "Mission Center"
+                id: wordmark
+                text: "Refract"
                 font.family: Theme.displayFamily
-                font.pixelSize: 26
+                font.pixelSize: 34
                 font.weight: Font.Bold
-                color: Theme.label
-            }
-            Text {
-                id: glassWord
-                text: "Glass"
-                font.family: Theme.displayFamily
-                font.pixelSize: 26
-                font.weight: Font.Bold
-                color: Theme.label
                 visible: false
             }
-            // the brand gradient (blue -> violet -> pink) through the word "Glass"
-            Item {
-                width: glassWord.implicitWidth
-                height: glassWord.implicitHeight
-                Rectangle {
-                    id: brandGradient
-                    anchors.fill: parent
-                    visible: false
-                    gradient: Gradient {
-                        orientation: Gradient.Horizontal
-                        GradientStop { position: 0; color: "#46A3FF" }
-                        GradientStop { position: 0.5; color: "#A37BFF" }
-                        GradientStop { position: 1; color: "#FF5A82" }
-                    }
+            Rectangle {
+                id: brandGradient
+                anchors.fill: parent
+                visible: false
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0; color: "#46A3FF" }
+                    GradientStop { position: 0.5; color: "#A37BFF" }
+                    GradientStop { position: 1; color: "#FF5A82" }
                 }
-                MultiEffect {
-                    anchors.fill: parent
-                    source: brandGradient
-                    maskEnabled: true
-                    maskSource: glassMask
-                }
-                ShaderEffectSource {
-                    id: glassMask
-                    sourceItem: glassWord
-                    hideSource: true
-                    visible: false
-                }
+            }
+            ShaderEffectSource {
+                id: wordmarkMask
+                sourceItem: wordmark
+                hideSource: true
+                visible: false
+            }
+            MultiEffect {
+                anchors.fill: parent
+                source: brandGradient
+                maskEnabled: true
+                maskSource: wordmarkMask
             }
         }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Version " + AppVersion + " · Liquid Glass edition"
+            text: "Version " + AppVersion + " · based on " + BasedOn
             font.pixelSize: 13
             font.weight: Font.Medium
             color: Theme.secondaryLabel
@@ -125,7 +114,8 @@ Sheet {
             lineHeight: 1.25
             text: "Data engine: " + (Monitor.staticInfo.engine === "magpie" ? "magpie" : "built-in")
                   + (Monitor.staticInfo.desktop ? " · " + Monitor.staticInfo.desktop : "")
-                  + "\nBuilt on Mission Center by the Mission Center developers. "
+                  + "\nRefract is a modified version of Mission Center by the Mission Center developers, "
+                  + "and is not affiliated with or endorsed by that project. "
                   + "Inter typeface by the Inter Project Authors (SIL OFL). "
                   + "Licensed under the GPL-3.0-or-later."
             font.pixelSize: 11

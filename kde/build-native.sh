@@ -9,7 +9,7 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 cmake -S native -B native/build -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build native/build --parallel
-echo "built native/build/libmcglass.so"
+echo "built native/build/librefract_effects.so"
 
 if command -v cargo >/dev/null; then
     if [ ! -f ../subprojects/magpie/platform-linux/crates/app-rummage/Cargo.toml ]; then
@@ -22,7 +22,7 @@ if command -v cargo >/dev/null; then
     fi
     cargo build --release --manifest-path ../subprojects/magpie/Cargo.toml
     cargo build --release --manifest-path magpie-bridge/Cargo.toml
-    echo "built magpie and mc-glass-bridge"
+    echo "built magpie and refract-bridge"
 else
     echo "cargo not found: skipping magpie (the Python collectors will be used)"
 fi

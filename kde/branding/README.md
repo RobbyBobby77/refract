@@ -1,9 +1,10 @@
-# Mission Center Glass — brand
+# Refract — brand
 
 ![Banner](banner.png)
 
-**Name.** *Mission Center Glass* in full; *Mission Center* only where the context already says
-Glass (for example inside the app). Never "MC Glass" or "Glass".
+**Name.** *Refract* — what glass does to light, and what the app does to your system's numbers.
+Always capitalised, never abbreviated. When the lineage matters, say "Refract, based on Mission
+Center"; never imply it *is* Mission Center or is endorsed by its developers.
 
 **Tagline.** "Your system at a glance — in Liquid Glass, for KDE Plasma."
 
@@ -23,8 +24,11 @@ browser. Minimum comfortable size: 22 px.
 | Night (icon/banner ground) | `#2B3163` → `#161A38` → `#0A0B1A` |
 
 **Type.** Inter Display Bold for the wordmark and titles, Inter for text (bundled in
-`missioncenter_kde/fonts`). In the wordmark, "Glass" carries the brand gradient.
+`refract/fonts`). The wordmark "Refract" is filled with the brand gradient.
 
 **Regenerating.** `python3 branding/make_icon.py && cp branding/icon.svg
-missioncenter_kde/icons/io.missioncenter.MissionCenter.Glass.svg`, then
+refract/icons/io.github.RobbyBobby77.Refract.svg`, then
 `python3 branding/make_banner.py`.
+
+**App ID.** `io.github.RobbyBobby77.Refract` (desktop file, icon name, Wayland app id); the
+command is `refract`.

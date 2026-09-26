@@ -1,6 +1,6 @@
 """KWin blur-behind for the translucent window (via the small native helper).
 
-The helper (`native/libmcglass.so`, built from kde/native) wraps
+The helper (`native/librefract_effects.so`, built from kde/native) wraps
 KWindowEffects. Without it, or outside KWin, `available` is False and the UI
 falls back to an opaque background.
 """
@@ -18,8 +18,8 @@ log = logging.getLogger(__name__)
 
 _HERE = Path(__file__).resolve().parent
 _CANDIDATES = (
-    _HERE / "native" / "libmcglass.so",                       # installed / copied
-    _HERE.parent / "native" / "build" / "libmcglass.so",      # source checkout
+    _HERE / "native" / "librefract_effects.so",                    # installed / copied
+    _HERE.parent / "native" / "build" / "librefract_effects.so",   # source checkout
 )
 
 
@@ -32,8 +32,8 @@ def _load() -> ctypes.CDLL | None:
         except OSError as error:
             log.warning("could not load %s: %s", path, error)
             continue
-        lib.mcglass_available.restype = ctypes.c_bool
-        lib.mcglass_apply.argtypes = [
+        lib.refract_effects_available.restype = ctypes.c_bool
+        lib.refract_effects_apply.argtypes = [
             ctypes.c_void_p, ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.c_int,
             ctypes.c_double, ctypes.c_double, ctypes.c_double,
         ]
@@ -78,7 +78,7 @@ class WindowEffects(QObject):
 
     def _poll(self) -> None:
         self._polls += 1
-        if self._lib.mcglass_available():
+        if self._lib.refract_effects_available():
             self._timer.stop()
             self._available = True
             self.availableChanged.emit()
@@ -103,4 +103,4 @@ class WindowEffects(QObject):
         array = (ctypes.c_int * len(flat))(*flat)
         pointer = shiboken6.getCppPointer(window)[0]
         # A touch of extra saturation keeps colours behind the glass lively.
-        self._lib.mcglass_apply(pointer, enable, array, len(rects), 1.0, 1.0, 1.35)
+        self._lib.refract_effects_apply(pointer, enable, array, len(rects), 1.0, 1.0, 1.35)

@@ -6,13 +6,13 @@ Sheet {
     id: sheet
 
     title: "Settings"
-    subtitle: "Mission Center Glass " + AppVersion
+    subtitle: "Refract " + AppVersion
     signal aboutRequested()
     preferredWidth: 600
     preferredHeight: 700
 
     footer: [
-        PillButton { text: "About Mission Center Glass"; tint: Theme.graphite; onClicked: sheet.aboutRequested() },
+        PillButton { text: "About Refract"; tint: Theme.graphite; onClicked: sheet.aboutRequested() },
         PillButton { text: "Done"; prominent: true; onClicked: sheet.close() }
     ]
 
@@ -176,7 +176,7 @@ Sheet {
                 }
                 SettingRow {
                     label: "Use KDE window decorations"
-                    hint: "Takes effect after restarting Mission Center Glass"
+                    hint: "Takes effect after restarting Refract"
                     last: true
                     Toggle { checked: Prefs.nativeDecorations; onToggled: c => Prefs.nativeDecorations = c }
                 }
@@ -276,7 +276,7 @@ Sheet {
             Text {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
-                text: "Based on Mission Center by the Mission Center developers · GPL-3.0"
+                text: "Refract is based on Mission Center by the Mission Center developers · GPL-3.0"
                 font.pixelSize: 11
                 color: Theme.tertiaryLabel
             }

@@ -15,16 +15,16 @@ from PySide6.QtQml import QQmlApplicationEngine, QQmlExpression
 from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
 from PySide6.QtQuickControls2 import QQuickStyle
 
-from . import __version__
+from . import BASED_ON, __version__
 from .bridge import Monitor
 from .effects import WindowEffects
 
 ROOT = Path(__file__).resolve().parent
-APP_ID = "io.missioncenter.MissionCenter.Glass"
+APP_ID = "io.github.RobbyBobby77.Refract"
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="missioncenter-glass", description="Mission Center Glass: your system at a glance, in Liquid Glass.")
+    p = argparse.ArgumentParser(prog="refract", description="Refract: your system at a glance, in Liquid Glass.")
     p.add_argument("--page", choices=["performance", "apps", "services"], help="page to open")
     p.add_argument("--device", help="performance device key to select, e.g. memory, disk:nvme0n1")
     p.add_argument("--theme", choices=["system", "light", "dark"], help="override the colour scheme")
@@ -33,6 +33,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--size", default="", help="initial window size WxH")
     p.add_argument("--debug", action="store_true")
     return p.parse_args(argv)
+
+
+def _migrate_settings() -> None:
+    """Carry preferences over from the app's earlier name (Mission Center Glass)."""
+    config = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    old, new = config / "MissionCenter" / "MissionCenterGlass.conf", config / "Refract" / "Refract.conf"
+    if old.exists() and not new.exists():
+        new.parent.mkdir(parents=True, exist_ok=True)
+        new.write_bytes(old.read_bytes())
 
 
 def _load_fonts() -> None:
@@ -55,10 +64,11 @@ class Session:
         QQuickWindow.setDefaultAlphaBuffer(True)
 
         self.app = QGuiApplication(sys.argv[:1])
-        self.app.setOrganizationName("MissionCenter")
-        self.app.setOrganizationDomain("missioncenter.io")
-        self.app.setApplicationName("MissionCenterGlass")
-        self.app.setApplicationDisplayName("Mission Center Glass")
+        _migrate_settings()
+        self.app.setOrganizationName("Refract")
+        self.app.setOrganizationDomain("robbybobby77.github.io")
+        self.app.setApplicationName("Refract")
+        self.app.setApplicationDisplayName("Refract")
         self.app.setDesktopFileName(APP_ID)
         self.app.setWindowIcon(QIcon(str(ROOT / "icons" / f"{APP_ID}.svg")))
 
@@ -75,7 +85,8 @@ class Session:
         ctx = self.engine.rootContext()
         ctx.setContextProperty("Monitor", self.monitor)
         ctx.setContextProperty("WindowEffects", self.effects)
-        ctx.setContextProperty("AppVersion", __version__.removesuffix("-glass"))
+        ctx.setContextProperty("AppVersion", __version__)
+        ctx.setContextProperty("BasedOn", BASED_ON)
         ctx.setContextProperty("AppIcon", QUrl.fromLocalFile(str(ROOT / "icons" / f"{APP_ID}.svg")).toString())
         ctx.setContextProperty("ShaderDir", QUrl.fromLocalFile(str(ROOT / "shaders") + "/").toString())
         ctx.setContextProperty("StartupOptions", {
@@ -86,7 +97,7 @@ class Session:
             "screenshot": bool(args.screenshot),
         })
 
-        self.engine.load(QUrl.fromLocalFile(str(ROOT / "qml" / "MissionCenter" / "Main.qml")))
+        self.engine.load(QUrl.fromLocalFile(str(ROOT / "qml" / "Refract" / "Main.qml")))
         roots = self.engine.rootObjects()
         self.window = roots[0] if roots else None
         if self.window is not None:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the Mission Center Glass app icon (branding/icon.svg).
+"""Generate the Refract app icon (branding/icon.svg).
 
 The shape is an Apple-style continuous-corner squircle (a superellipse);
 the mark is a frosted glass panel carrying a live activity line in the app's
@@ -63,7 +63,7 @@ def build() -> str:
         for f in (0.30, 0.52, 0.74))
 
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{SIZE}" height="{SIZE}" viewBox="0 0 {SIZE} {SIZE}">
-  <title>Mission Center Glass</title>
+  <title>Refract</title>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#2B3163"/>

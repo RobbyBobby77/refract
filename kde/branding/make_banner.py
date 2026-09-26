@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Render the README banner (branding/banner.png) with Qt, using the app's own
-Inter fonts so the wordmark looks the same everywhere.
+"""Render Refract's README banner (branding/banner.png) with Qt, using the
+app's own Inter fonts so the wordmark looks the same everywhere.
 
     python3 branding/make_banner.py
 """
@@ -16,7 +16,7 @@ from PySide6.QtGui import (QColor, QFont, QFontDatabase, QGuiApplication, QImage
 from PySide6.QtSvg import QSvgRenderer
 
 HERE = Path(__file__).resolve().parent
-FONTS = HERE.parent / "missioncenter_kde" / "fonts"
+FONTS = HERE.parent / "refract" / "fonts"
 W, H = 2000, 600
 
 # brand palette (Apple system colours used across the app)
@@ -53,26 +53,23 @@ def main() -> None:
     QSvgRenderer(str(HERE / "icon.svg")).render(p, QRectF(110, 90, 420, 420))
 
     title = QFont("Inter Display")
-    title.setPixelSize(118)
+    title.setPixelSize(172)
     title.setWeight(QFont.Bold)
-    x, y = 590, 300
-    path = QPainterPath()
-    path.addText(x, y, title, "Mission Center ")
-    p.fillPath(path, QColor("#FFFFFF"))
-    glass = QPainterPath()
-    glass.addText(x + path.boundingRect().width() + 30, y, title, "Glass")
-    grad = QLinearGradient(glass.boundingRect().topLeft(), glass.boundingRect().topRight())
+    x, y = 600, 318
+    word = QPainterPath()
+    word.addText(x, y, title, "Refract")
+    grad = QLinearGradient(word.boundingRect().topLeft(), word.boundingRect().topRight())
     grad.setColorAt(0, BLUE)
     grad.setColorAt(0.5, VIOLET)
     grad.setColorAt(1, PINK)
-    p.fillPath(glass, grad)
+    p.fillPath(word, grad)
 
     tagline = QFont("Inter")
     tagline.setPixelSize(44)
     tagline.setWeight(QFont.Medium)
     p.setFont(tagline)
     p.setPen(QColor(235, 235, 245, 165))
-    p.drawText(QPointF(x + 6, y + 92), "Your system at a glance — in Liquid Glass, for KDE Plasma.")
+    p.drawText(QPointF(x + 8, y + 96), "Your system at a glance — in Liquid Glass, for KDE Plasma.")
     p.end()
 
     out = HERE / "banner.png"

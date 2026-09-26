@@ -1,9 +1,9 @@
 [package]
-name = "mc-glass-bridge"
+name = "refract-bridge"
 version = "1.2.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
-description = "Relays Mission Center's magpie IPC as JSON lines for the Liquid Glass frontend"
+description = "Relays Mission Center's magpie IPC as JSON lines for Refract"
 
 [dependencies]
 libc = "0.2"

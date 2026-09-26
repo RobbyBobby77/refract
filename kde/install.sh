@@ -1,15 +1,23 @@
 #!/usr/bin/env bash
-# Install (or remove with --uninstall) Mission Center Glass for the current user.
+# Install (or remove with --uninstall) Refract for the current user.
 # Everything goes under $PREFIX (default ~/.local); no root needed.
 set -euo pipefail
 
-APP_ID=io.missioncenter.MissionCenter.Glass
+APP_ID=io.github.RobbyBobby77.Refract
 PREFIX="${PREFIX:-$HOME/.local}"
 SRC="$(dirname "$(readlink -f "$0")")"
-DATA="$PREFIX/share/missioncenter-glass"
-BIN="$PREFIX/bin/missioncenter-glass"
+DATA="$PREFIX/share/refract"
+BIN="$PREFIX/bin/refract"
 DESKTOP="$PREFIX/share/applications/$APP_ID.desktop"
 ICON="$PREFIX/share/icons/hicolor/scalable/apps/$APP_ID.svg"
+
+# What earlier versions (named "Mission Center Glass") installed.
+LEGACY=(
+    "$PREFIX/share/missioncenter-glass"
+    "$PREFIX/bin/missioncenter-glass"
+    "$PREFIX/share/applications/io.missioncenter.MissionCenter.Glass.desktop"
+    "$PREFIX/share/icons/hicolor/scalable/apps/io.missioncenter.MissionCenter.Glass.svg"
+)
 
 refresh() {
     command -v update-desktop-database >/dev/null && update-desktop-database -q "$PREFIX/share/applications" || true
@@ -20,9 +28,9 @@ refresh() {
 }
 
 if [[ "${1:-}" == "--uninstall" ]]; then
-    rm -rf "$DATA" "$BIN" "$DESKTOP" "$ICON"
+    rm -rf "$DATA" "$BIN" "$DESKTOP" "$ICON" "${LEGACY[@]}"
     refresh
-    echo "Mission Center Glass removed."
+    echo "Refract removed."
     exit 0
 fi
 
@@ -37,22 +45,23 @@ if (( ${#missing[@]} )); then
     exit 1
 fi
 
+rm -rf "${LEGACY[@]}"
 mkdir -p "$DATA" "$(dirname "$BIN")" "$(dirname "$DESKTOP")" "$(dirname "$ICON")"
-rm -rf "$DATA/missioncenter_kde"
-cp -r "$SRC/missioncenter_kde" "$DATA/"
+rm -rf "$DATA/refract"
+cp -r "$SRC/refract" "$DATA/"
 find "$DATA" -name __pycache__ -type d -prune -exec rm -rf {} +
 
 # Optional native helpers (see build-native.sh); skipped without a toolchain.
 if command -v cmake >/dev/null && command -v g++ >/dev/null; then
     if "$SRC/build-native.sh"; then
-        native="$DATA/missioncenter_kde/native"
+        native="$DATA/refract/native"
         mkdir -p "$native"
-        cp "$SRC/native/build/libmcglass.so" "$native/"
+        cp "$SRC/native/build/librefract_effects.so" "$native/"
         magpie="$SRC/../subprojects/magpie/target/release/magpie"
-        bridge="$SRC/magpie-bridge/target/release/mc-glass-bridge"
+        bridge="$SRC/magpie-bridge/target/release/refract-bridge"
         if [[ -x "$magpie" && -x "$bridge" ]]; then
-            cp "$magpie" "$native/missioncenter-magpie"
-            cp "$bridge" "$native/mc-glass-bridge"
+            cp "$magpie" "$native/magpie"
+            cp "$bridge" "$native/refract-bridge"
         fi
     else
         echo "note: native parts failed to build; installing without them"
@@ -64,12 +73,12 @@ fi
 cat > "$BIN" <<LAUNCHER
 #!/bin/sh
 export PYTHONPATH="$DATA\${PYTHONPATH:+:\$PYTHONPATH}"
-exec python3 -m missioncenter_kde "\$@"
+exec python3 -m refract "\$@"
 LAUNCHER
 chmod +x "$BIN"
 
 sed "s|^Exec=.*|Exec=$BIN|" "$SRC/$APP_ID.desktop" > "$DESKTOP"
-cp "$SRC/missioncenter_kde/icons/$APP_ID.svg" "$ICON"
+cp "$SRC/refract/icons/$APP_ID.svg" "$ICON"
 refresh
 
-echo "Installed. Launch \"Mission Center Glass\" from the app launcher, or run: $BIN"
+echo "Installed. Launch \"Refract\" from the app launcher, or run: $BIN"

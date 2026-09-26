@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from PySide6.QtCore import QCoreApplication, QTimer  # noqa: E402
 
-from missioncenter_kde.app import Session, parse_args  # noqa: E402
+from refract.app import Session, parse_args  # noqa: E402
 
 
 class _ProblemCounter(logging.Handler):

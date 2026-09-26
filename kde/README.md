@@ -1,9 +1,9 @@
-![Mission Center Glass](branding/banner.png)
+![Refract](branding/banner.png)
 
-# Mission Center Glass
+# Refract
 
-A KDE / Qt Quick re-imagining of [Mission Center](https://gitlab.com/mission-center-devs/mission-center),
-designed as if Apple had built it: a see-through window over KWin's blur, floating Liquid Glass
+**Refract** is a system monitor for KDE Plasma — a KDE / Qt Quick re-imagining of
+[Mission Center](https://gitlab.com/mission-center-devs/mission-center), designed as if Apple had built it: a see-through window over KWin's blur, floating Liquid Glass
 navigation, big confident type, soft translucent cards and springy motion throughout. Its data comes
 from Mission Center's own engine, magpie.
 
@@ -52,7 +52,7 @@ Everything Mission Center shows, on a new frontend:
 
 ## Data engine
 
-When built, the app runs Mission Center's own collector, **magpie** (`../subprojects/magpie`), exactly
+When built, Refract runs Mission Center's own collector, **magpie** (`../subprojects/magpie`), exactly
 as the GTK app does. `magpie-bridge/` is a small Rust helper that starts magpie on a private nng
 socket and relays its protobuf IPC as JSON lines; `backend/magpie.py` maps the replies onto the UI.
 That brings nvtop-based GPU data (encode/decode, per-process GPU use for every vendor), SMART-capable
@@ -76,7 +76,7 @@ Optional native parts — KWin blur and the magpie engine (Fedora package names)
 
 ```sh
 ./build-native.sh                # optional: KWin blur helper + magpie + bridge
-./missioncenter-glass            # run from the checkout
+./bin/refract                    # run from the checkout
 ./install.sh                     # install for your user (~/.local); builds the native parts if it can
 ./install.sh --uninstall
 ```
@@ -89,27 +89,35 @@ switch pages, <kbd>Ctrl</kbd>+<kbd>F</kbd> search, <kbd>Ctrl</kbd>+<kbd>,</kbd> 
 ## Layout
 
 ```
-missioncenter_kde/
+refract/            the app (Python package)
   app.py            bootstrap: fonts, QML engine, screenshot mode
   bridge.py         Monitor: sampler threads → graph histories + models for QML
   models.py         sidebar devices, apps/process tree, services (positional list models)
   wallpaper.py      finds the Plasma wallpaper
   effects.py        KWin blur-behind via the native helper
   backend/          magpie adapter + fallback collectors for /proc, /sys, NetworkManager, systemd
-  qml/MissionCenter design system (Theme, Glass*, Card, Graph…) and pages
+  qml/Refract/      design system (Theme, Glass*, Card, Graph…) and pages
   shaders/          GLSL sources + compiled .qsb packs (./build-shaders.sh to rebuild)
   fonts/            Inter (SIL OFL)
+bin/refract         launcher for a source checkout
 branding/           icon + banner sources and the brand guide
 native/             C++ helper wrapping KWindowEffects (blur-behind)
 magpie-bridge/      Rust JSON bridge to magpie
 tools/              drive.py (UI smoke test: `tools/drive.py --smoke`), patch-via-git.sh
 ```
 
-The original GTK application in the repository root is untouched.
+The original Mission Center GTK application in the repository root is untouched.
 
-## Licence
+## Credits & licence
 
-GPL-3.0-or-later, like Mission Center. Inter is © The Inter Project Authors, under the SIL Open
-Font License (`missioncenter_kde/fonts/Inter-LICENSE.txt`).
+Refract is a modified version of **Mission Center**, © the Mission Center developers
+([gitlab.com/mission-center-devs](https://gitlab.com/mission-center-devs/mission-center)). This
+fork (from September 2026) replaces the GTK frontend with a new Qt Quick one and adds the bridge
+to Mission Center's magpie engine, which is used unmodified. Refract is an independent project and
+is not affiliated with or endorsed by the Mission Center developers.
+
+Like Mission Center, Refract is licensed under the **GPL-3.0-or-later** (see [`COPYING`](../COPYING)).
+Inter is © The Inter Project Authors, under the SIL Open Font License
+(`refract/fonts/Inter-LICENSE.txt`).
 
 Working on the code (or pointing an AI agent at it)? See [`AGENTS.md`](AGENTS.md).

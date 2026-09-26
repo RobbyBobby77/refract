@@ -1,24 +1,24 @@
-# AGENTS.md — Mission Center, Liquid Glass edition (`kde/`)
+# AGENTS.md — Refract (`kde/`)
 
-A KDE / Qt Quick frontend for Mission Center with an Apple "Liquid Glass" look.
+Refract: a KDE / Qt Quick system monitor with an Apple "Liquid Glass" look, forked from Mission Center.
 Python (PySide6) + QML, data from Mission Center's Rust engine **magpie** via a small
-Rust bridge, with pure-Python collectors as a fallback. Everything for this edition lives
+Rust bridge, with pure-Python collectors as a fallback. Everything for Refract lives
 in `kde/`; the upstream GTK app in the repo root is untouched and must stay that way.
 
 ## Layout
 
 ```
 kde/
-  missioncenter-glass        run from the checkout (sets PYTHONPATH)
+  bin/refract                run from the checkout (sets PYTHONPATH)
   install.sh                 per-user install to ~/.local (+ --uninstall); builds native parts
   build-native.sh            KWin blur helper (C++) + magpie + bridge (Rust)
   build-shaders.sh           GLSL -> .qsb (compiled packs are committed)
   branding/                  icon + banner generators and the brand guide (branding/README.md)
   tools/drive.py             UI test harness / smoke test (see Verifying)
   tools/patch-via-git.sh     stands in for GNU patch when building magpie's nvtop
-  native/                    libmcglass.so: C ABI over KWindowEffects (blur-behind)
-  magpie-bridge/             mc-glass-bridge: magpie protobuf/nng <-> JSON lines on stdio
-  missioncenter_kde/
+  native/                    librefract_effects.so: C ABI over KWindowEffects (blur-behind)
+  magpie-bridge/             refract-bridge: magpie protobuf/nng <-> JSON lines on stdio
+  refract/                   the app (Python package; `python3 -m refract`)
     app.py                   Session: fonts, engine, context properties, screenshot mode
     bridge.py                Monitor (QML `Monitor`): sampler threads -> Series + models
     models.py                DeviceModel, ProcessModel, ServiceModel (positional)
@@ -28,7 +28,7 @@ kde/
     backend/collectors.py    Python fallback: CPU/mem/disk/net/GPU/fans/battery
     backend/processes.py     Python fallback: processes/apps; also signal_process, process_details
     backend/services.py      systemd over D-Bus (always used; magpie's list is thinner)
-    qml/MissionCenter/       all QML (flat dir; qmldir declares Theme/Prefs/Fmt singletons)
+    qml/Refract/             all QML (flat dir; qmldir declares Theme/Prefs/Fmt singletons)
     shaders/                 glass.vert/frag, panel.frag, backdrop.frag (+ .qsb)
 ```
 
@@ -44,12 +44,12 @@ produces (see the `_cpu/_memory/_disk/...` mappers).
 
 ```sh
 cd kde
-./missioncenter-glass [--page apps|services] [--device KEY] [--theme light|dark]
+./bin/refract [--page apps|services] [--device KEY] [--theme light|dark]
 ./build-native.sh          # after editing native/ or magpie-bridge/
 ./build-shaders.sh         # after editing any shaders/*.vert|*.frag — commit the .qsb too
-./install.sh               # refresh the user's installed copy (~/.local/share/missioncenter-glass)
-MC_ENGINE=python ./missioncenter-glass   # force the Python collectors
-python3 -m missioncenter_kde.backend    # self-test of the Python collectors
+./install.sh               # refresh the user's installed copy (~/.local/share/refract)
+MC_ENGINE=python ./bin/refract   # force the Python collectors
+python3 -m refract.backend    # self-test of the Python collectors
 ```
 
 Runtime deps are distro packages (PySide6, psutil, dbus-python, kf6-kirigami) — never pip

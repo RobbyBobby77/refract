@@ -1,0 +1,5 @@
+#!/bin/sh
+# Run Refract straight from a source checkout.
+HERE="$(dirname "$(dirname "$(readlink -f "$0")")")"
+export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -m refract "$@"

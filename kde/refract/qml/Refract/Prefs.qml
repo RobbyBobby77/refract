@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 import QtCore
 
-// Persistent preferences (~/.config/MissionCenter/MissionCenterGlass.conf).
+// Persistent preferences (~/.config/Refract/Refract.conf).
 Settings {
     category: "Preferences"
 

@@ -1,5 +1,5 @@
-//! mc-glass-bridge: runs Mission Center's `magpie` data engine and relays its
-//! protobuf IPC as JSON lines, so the Python/QML frontend can use it.
+//! refract-bridge: runs Mission Center's `magpie` data engine and relays its
+//! protobuf IPC as JSON lines, so Refract (Python/QML) can use it.
 //!
 //! stdin:  one JSON-encoded `magpie.ipc.Request` per line
 //! stdout: one JSON-encoded `magpie.ipc.Response` per line, in order; transport
@@ -119,7 +119,7 @@ impl Engine {
         let runtime = std::env::var_os("XDG_RUNTIME_DIR")
             .map(PathBuf::from)
             .unwrap_or_else(std::env::temp_dir);
-        let socket_path = runtime.join(format!("mc-glass-magpie-{}.ipc", std::process::id()));
+        let socket_path = runtime.join(format!("refract-magpie-{}.ipc", std::process::id()));
         let addr = CString::new(format!("ipc://{}", socket_path.display())).unwrap();
         Self { addr, socket_path, child: None, client: None }
     }

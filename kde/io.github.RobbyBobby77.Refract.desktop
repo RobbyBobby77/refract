@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=Mission Center Glass
+Name=Refract
 GenericName=System Monitor
 Comment=Your system at a glance: CPU, memory, disks, network and GPU, in Liquid Glass
-Exec=missioncenter-glass
-Icon=io.missioncenter.MissionCenter.Glass
+Exec=refract
+Icon=io.github.RobbyBobby77.Refract
 Terminal=false
 Categories=Qt;KDE;System;Monitor;
 Keywords=CPU;GPU;Memory;Disk;Network;Processes;Services;Task Manager;System Monitor;Activity Monitor;

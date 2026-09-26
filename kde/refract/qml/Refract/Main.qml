@@ -19,7 +19,7 @@ ApplicationWindow {
     minimumWidth: 940
     minimumHeight: 620
     visible: true
-    title: "Mission Center Glass"
+    title: "Refract"
     color: "transparent"
     background: null
     flags: frameless ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window

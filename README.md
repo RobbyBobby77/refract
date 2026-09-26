@@ -1,6 +1,14 @@
-> <img src="kde/branding/icon.svg" width="48" align="left"/> **Mission Center Glass (KDE fork).** This fork adds a from-scratch KDE / Qt Quick frontend with
-> an Apple-style Liquid Glass design in [`kde/`](kde/README.md) — run `kde/missioncenter-glass`
-> or install it with `kde/install.sh`. The original GTK application below is unchanged.
+<p align="center"><img src="kde/branding/banner.png" alt="Refract" width="820"/></p>
+
+**Refract** is a system monitor for KDE Plasma with an Apple-style Liquid Glass design, built on
+Mission Center's data engine. It lives in [`kde/`](kde/README.md) — run `kde/bin/refract`, or
+install it with `kde/install.sh`.
+
+Refract is a modified version of Mission Center by the Mission Center developers, licensed under
+the GPL-3.0-or-later (see `COPYING`), and is not affiliated with or endorsed by that project. The
+original Mission Center README follows, unchanged.
+
+---
 
 <img align="left"  src="https://gitlab.com/mission-center-devs/mission-center/-/raw/main/data/icons/hicolor/scalable/apps/io.missioncenter.MissionCenter.svg" alt="drawing" width="64"/> 
 

@@ -19,7 +19,7 @@ QRegion toRegion(const int *rects, int count)
 extern "C" {
 
 // True when the compositor can blur behind windows (KWin with blur enabled).
-Q_DECL_EXPORT bool mcglass_available()
+Q_DECL_EXPORT bool refract_effects_available()
 {
     return KWindowEffects::isEffectAvailable(KWindowEffects::BlurBehind);
 }
@@ -27,7 +27,7 @@ Q_DECL_EXPORT bool mcglass_available()
 // Blur (and optionally tint the contrast of) what's behind `window`.
 // `rects` holds `count` x,y,w,h quadruples in logical pixels; count == 0
 // means the whole window.
-Q_DECL_EXPORT void mcglass_apply(QWindow *window, bool enable, const int *rects, int count,
+Q_DECL_EXPORT void refract_effects_apply(QWindow *window, bool enable, const int *rects, int count,
                                  double contrast, double intensity, double saturation)
 {
     if (!window)

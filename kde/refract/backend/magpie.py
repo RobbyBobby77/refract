@@ -1,6 +1,6 @@
 """Data from Mission Center's own engine, magpie.
 
-magpie speaks protobuf over nng; the small `mc-glass-bridge` helper (Rust,
+magpie speaks protobuf over nng; the small `refract-bridge` helper (Rust,
 kde/magpie-bridge) relays that as JSON lines. This module turns magpie's
 replies into the same dict schemas the pure-Python collectors produce, so the
 UI doesn't care which engine is running. Anything magpie doesn't report (CPU
@@ -24,8 +24,8 @@ log = logging.getLogger(__name__)
 _PKG = Path(__file__).resolve().parent.parent
 _REPO_KDE = _PKG.parent
 _SEARCH = (
-    (_PKG / "native" / "mc-glass-bridge", _PKG / "native" / "missioncenter-magpie"),
-    (_REPO_KDE / "magpie-bridge" / "target" / "release" / "mc-glass-bridge",
+    (_PKG / "native" / "refract-bridge", _PKG / "native" / "magpie"),
+    (_REPO_KDE / "magpie-bridge" / "target" / "release" / "refract-bridge",
      _REPO_KDE.parent / "subprojects" / "magpie" / "target" / "release" / "magpie"),
 )
 
@@ -339,7 +339,7 @@ class MagpieProcessSampler:
         self._icons: dict[str, str] = {}
         self._apps: list[dict[str, Any]] = []
         self._resolves = 0
-        self._icon_dir = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "missioncenter-glass" / "icons"
+        self._icon_dir = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "refract" / "icons"
 
     def _user(self, pid: int, name: str) -> str:
         cached = self._owners.get(pid)
