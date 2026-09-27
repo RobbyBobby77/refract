@@ -112,6 +112,22 @@ Launch **Refract** from your application launcher, or run `refract`.
 <kbd>Ctrl</kbd>+<kbd>F</kbd> search · <kbd>Ctrl</kbd>+<kbd>,</kbd> settings ·
 <kbd>Delete</kbd> quits the selected app · <kbd>Esc</kbd> clears the selection.
 
+## Desktop widget
+
+<p align="center">
+  <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/widget-dark.png" alt="The Refract widget on the desktop: CPU, memory, disk, network and GPU graphs on frosted glass" width="360"/>
+  <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/widget-light.png" alt="The Refract widget in light mode" width="360"/>
+</p>
+
+Refract's sidebar also comes as a Plasma widget: live graphs for CPU, memory, disk, network and
+GPU on frosted glass that picks up your wallpaper — or a small CPU graph in a panel. It uses
+Plasma's own system sensors, so it works on its own, and clicking it opens Refract.
+
+```sh
+git clone https://github.com/RobbyBobby77/refract.git
+refract/kde/plasmoid/install.sh      # then right-click the desktop → Add Widgets… → Refract
+```
+
 ## Make it yours
 
 Settings lets you pick light, dark or automatic appearance; a multicolour, single-hue or KDE

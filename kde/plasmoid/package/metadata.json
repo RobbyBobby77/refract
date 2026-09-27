@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "RobbyBobby77"
+            }
+        ],
+        "BugReportUrl": "https://github.com/RobbyBobby77/refract/issues",
+        "Category": "System Information",
+        "Description": "Your system at a glance: CPU, memory, disk, network and GPU, through glass",
+        "Icon": "io.github.RobbyBobby77.Refract",
+        "Id": "io.github.RobbyBobby77.Refract.Widget",
+        "License": "GPL-3.0-or-later",
+        "Name": "Refract",
+        "Version": "1.1.0",
+        "Website": "https://github.com/RobbyBobby77/refract"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

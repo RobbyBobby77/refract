@@ -50,6 +50,29 @@ python3 tools/screenshots.py dark && python3 tools/screenshots.py light   # READ
 Useful flags: `--page apps|services`, `--device memory|disk:nvme0n1|net:wlp…`,
 `--theme light|dark`, `--screenshot out.png`.
 
+## Desktop widget
+
+`plasmoid/` is a Plasma 6 widget: Refract's sidebar (CPU, memory, disk, network, GPU with live
+graphs) on a frosted-glass card for the desktop, or as a small CPU graph in a panel.
+
+```sh
+plasmoid/install.sh               # install or upgrade for your user, then Add Widgets… → Refract
+plasmoid/install.sh --uninstall
+plasmoid/install.sh --package     # refract-widget.plasmoid, for "Install from File…" or the KDE Store
+python3 plasmoid/preview.py [--theme light] [--wallpaper IMG]   # render it to a PNG, no Plasma needed
+```
+
+- Data comes from Plasma's own system sensors (`org.kde.ksysguard.sensors`, the ksystemstats
+  daemon that Plasma's System Monitor widgets use), so the widget works without Refract running.
+  Clicking a row opens Refract (the Flatpak or a source install) on that device through `kstart`.
+- The glass is real: the card renders the part of the desktop's wallpaper item behind it
+  (`Plasmoid.containment.wallpaperGraphicsObject`), blurs it and clips it to its rounded shape —
+  plasmashell draws wallpaper and widgets in one window, so KWin can't blur behind a widget.
+  Without a wallpaper (panel popup, `plasmawindowed`) it falls back to a plain tint.
+- `SystemStats.qml` (sensors + history) and `GlassCard.qml` (everything you see) are plain QML;
+  `main.qml` is the Plasma side. That split is what lets `preview.py` render the widget offscreen.
+  The Flatpak can't install Plasma widgets, so the widget installs on its own.
+
 ## Flatpak
 
 `flatpak/build.sh` builds Refract as a Flatpak and writes `flatpak/refract.flatpak`, a single-file

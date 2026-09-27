@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="showCpu" type="Bool"><default>true</default></entry>
+    <entry name="showMemory" type="Bool"><default>true</default></entry>
+    <entry name="showDisk" type="Bool"><default>true</default></entry>
+    <entry name="showNetwork" type="Bool"><default>true</default></entry>
+    <entry name="showGpu" type="Bool"><default>true</default></entry>
+    <!-- 0: follow the Plasma theme, 1: light, 2: dark -->
+    <entry name="appearance" type="Int"><default>0</default></entry>
+    <!-- Tinted glass: less of the wallpaper shows through, more contrast -->
+    <entry name="tinted" type="Bool"><default>false</default></entry>
+    <entry name="showHeader" type="Bool"><default>true</default></entry>
+  </group>
+</kcfg>

@@ -12,6 +12,8 @@ kde/
   bin/refract                run from the checkout (sets PYTHONPATH)
   install.sh                 per-user install to ~/.local (+ --deps, --uninstall); builds native parts
   build-native.sh            KWin blur helper (C++) + magpie + bridge (Rust) + magpie's hw.db
+  plasmoid/                  Plasma 6 desktop widget: package/ (metadata.json, contents/ui/*.qml, config),
+                             install.sh (install/upgrade, --uninstall, --package), preview.py (offscreen PNG)
   flatpak/                   Flatpak manifest (Flathub-ready: offline, pinned sources); build.sh -> refract.flatpak;
                              install-app.sh (runs in the build); cargo-sources.json (+ update-cargo-sources.sh);
                              flathub-manifest.sh TAG -> flathub/ (submission copy); FLATHUB.md (how to submit)
@@ -60,6 +62,8 @@ cd kde
 flatpak run io.github.RobbyBobby77.Refract   # run the installed Flatpak
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest flatpak/io.github.RobbyBobby77.Refract.yml
 ./flatpak/update-cargo-sources.sh   # after magpie or magpie-bridge/Cargo.lock changes
+./plasmoid/install.sh      # after editing the widget (plasmawindowed io.github.RobbyBobby77.Refract.Widget to try it)
+python3 plasmoid/preview.py --out /tmp/widget.png [--theme light] [--plain]   # see the widget without Plasma
 MC_ENGINE=python ./bin/refract   # force the Python collectors
 python3 -m refract.backend    # self-test of the Python collectors
 ```
@@ -139,6 +143,21 @@ to see Qt/scenegraph logs. QML warnings are already routed to Python logging ("Q
 - Apple semantics: Theme.qml holds the system colours, radii, type; device colours via
   `Theme.deviceColor(name)`. Numbers use `font.features: Theme.tabular`; don't apply it to
   prose (it widens hyphens).
+
+## The desktop widget (`plasmoid/`)
+
+- Keep `SystemStats.qml` and `GlassCard.qml` free of Plasma APIs (`Plasmoid`, `PlasmaCore`,
+  Kirigami): `preview.py` runs them with plain Qt plus an `i18n()` stand-in. Plasma-specific
+  things (configuration, representations, launching Refract) belong in `main.qml`.
+- The frosted glass samples `Plasmoid.containment.wallpaperGraphicsObject` through a
+  `ShaderEffectSource` + `MultiEffect` blur. The source needs an explicit size (MultiEffect sizes
+  its passes from it; at 0×0 it draws nothing), and the card polls its position because widgets
+  move without notifying their children.
+- plasmawindowed reports `formFactor` Application (4); treat it like the desktop.
+- Fedora hides `console.log`/`console.debug` (`*.debug=false`); use `console.warn` when
+  debugging, with `QT_FORCE_STDERR_LOGGING=1`. With the screen off or locked, KWin sends no
+  frame callbacks, so windows (plasmawindowed, the app) never redraw after their first frame and
+  captures look frozen — use `preview.py` or the app's offscreen grabs instead.
 
 ## Gotchas that already cost hours
 
