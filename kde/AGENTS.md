@@ -29,12 +29,12 @@ kde/
     bridge.py                Monitor (QML `Monitor`): sampler threads -> Series + models
     models.py                DeviceModel, ProcessModel, ServiceModel (positional)
     effects.py               WindowEffects (QML `WindowEffects`): KWin blur via ctypes
-    wallpaper.py             current Plasma wallpaper (plasmashell D-Bus, KConfig fallback)
+    wallpaper.py             current Plasma wallpaper (plasmashell D-Bus, KConfig fallback; Flatpak: via host)
     sandbox.py               Flatpak: host() / OS_RELEASE / magpie_command(); no-ops outside Flatpak
     backend/magpie.py        magpie client + adapters to the snapshot schema
     backend/collectors.py    Python fallback: CPU/mem/disk/net/GPU/fans/battery
     backend/processes.py     Python fallback: processes/apps; also signal_process, process_details
-    backend/services.py      systemd over D-Bus (always used; magpie's list is thinner)
+    backend/services.py      systemd over D-Bus (Flatpak: host systemctl); always used, magpie's list is thinner
     qml/Refract/             all QML (flat dir; qmldir declares Theme/Prefs/Fmt singletons)
     shaders/                 glass.vert/frag, panel.frag, backdrop.frag (+ .qsb)
 ```

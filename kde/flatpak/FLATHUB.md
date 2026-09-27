@@ -29,6 +29,13 @@ below. Flathub builds from a release tag on GitHub, using its own copy of the ma
    flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
    ```
 
+   Expect exactly one linter error once the repository is public:
+   `finish-args-flatpak-spawn-access` (see below). While it's still private you'll also see
+   `appid-url-not-reachable`, `appstream-missing-screenshots` and
+   `appstream-screenshots-not-mirrored-in-ostree`, which all come from GitHub refusing access.
+   (This whole sequence was rehearsed from a local clone: the git + submodule checkout and the
+   offline build work.)
+
 ## Submitting
 
 Follow <https://docs.flathub.org/docs/for-app-authors/submission>: fork
