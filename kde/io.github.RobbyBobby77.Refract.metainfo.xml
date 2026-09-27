@@ -4,15 +4,15 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later AND OFL-1.1</project_license>
   <name>Refract</name>
-  <summary>System monitor in Liquid Glass</summary>
+  <summary>Monitor your system through glass</summary>
   <developer id="io.github.robbybobby77">
     <name>RobbyBobby77</name>
   </developer>
   <description>
     <p>
-      Refract is a system monitor for KDE Plasma with a Liquid Glass design: a refractive glass
-      sidebar, toolbar, menus and sheets over a window that shows your desktop through KWin's
-      own blur.
+      Refract is a system monitor for KDE Plasma made of glass: its sidebar, toolbar, menus and
+      sheets frost and bend whatever is behind them, over a window that shows your desktop
+      through KWin's own blur.
     </p>
     <ul>
       <li>Live graphs for every CPU core, memory, disks, Wi-Fi and Ethernet, GPUs, fans and batteries</li>

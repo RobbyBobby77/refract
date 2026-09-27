@@ -1,7 +1,7 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-// A round (or capsule, when it has text) Liquid Glass button.
+// A round (or capsule, when it has text) glass button.
 GlassSurface {
     id: btn
 

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 
-// A modal Liquid Glass sheet that springs in from slightly below.
+// A modal glass sheet that springs in from slightly below.
 Popup {
     id: sheet
 

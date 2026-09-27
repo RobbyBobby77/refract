@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/branding/banner.png" alt="Refract — your system at a glance, in Liquid Glass, for KDE Plasma" width="900"/>
+  <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/branding/banner.png" alt="Refract — your system at a glance, through glass, for KDE Plasma" width="900"/>
 </p>
 
 <p align="center">
-  <b>A system monitor for KDE Plasma, designed the way Apple would have made it.</b><br/>
+  <b>A system monitor for KDE Plasma, made of glass.</b><br/>
   CPU · memory · disks · network · GPU · fans · battery · apps · services
 </p>
 
@@ -20,7 +20,7 @@
 
 ## Why Refract
 
-- **Liquid Glass, for real.** The sidebar, toolbar, menus and sheets are a refractive glass material
+- **Real glass, not a blur.** The sidebar, toolbar, menus and sheets are a refractive glass material
   — frosted, bent at the edges, catching the light — floating over a window that shows your
   desktop through KWin's own blur. Not a blur-and-opacity imitation.
 - **Everything, live.** Every CPU core, memory composition, each disk and volume, Wi‑Fi and

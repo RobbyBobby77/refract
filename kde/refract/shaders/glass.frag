@@ -1,5 +1,5 @@
 #version 440
-// Liquid glass: a rounded slab of glass that frosts, saturates and bends the
+// Glass: a rounded slab of glass that frosts, saturates and bends the
 // scene behind it. The rim behaves like a convex lens (content is pulled in
 // and split into colour fringes), and a specular line catches the light on
 // the upper-left and lower-right edges.

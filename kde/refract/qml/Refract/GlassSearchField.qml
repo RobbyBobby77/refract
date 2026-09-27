@@ -1,7 +1,7 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-// Capsule search field in Liquid Glass; widens while focused.
+// Capsule search field in glass; widens while focused.
 GlassSurface {
     id: field
 

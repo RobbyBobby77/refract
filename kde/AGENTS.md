@@ -1,6 +1,6 @@
 # AGENTS.md — Refract (`kde/`)
 
-Refract: a KDE / Qt Quick system monitor with an Apple "Liquid Glass" look, forked from Mission Center.
+Refract: a KDE / Qt Quick system monitor with a refractive-glass look, forked from Mission Center.
 Python (PySide6) + QML, data from Mission Center's Rust engine **magpie** via a small
 Rust bridge, with pure-Python collectors as a fallback. Everything for Refract lives
 in `kde/`; the upstream GTK app in the repo root is untouched and must stay that way.
@@ -178,4 +178,8 @@ to see Qt/scenegraph logs. QML warnings are already routed to Python logging ("Q
 - Match the surrounding style: typed Python with small helpers and docstrings on public
   API; QML with `required property` delegates and comments only where intent isn't obvious.
 - Commit messages: imperative subject, a short body explaining *why*.
+- **No Apple trademarks in anything user-facing** (UI text, metainfo, desktop file, README,
+  banners): don't call the design "Liquid Glass" or suggest Apple made or endorsed it — say
+  "glass" / "refractive glass". The tagline is "Your system at a glance — through glass, for
+  KDE Plasma." Factual notes in code about where colour values come from are fine.
 - Never modify `subprojects/` (upstream submodules) or the GTK app in the repo root.

@@ -1,5 +1,5 @@
 #version 440
-// Liquid glass vertex stage: besides the usual texture coordinate we derive
+// Glass vertex stage: besides the usual texture coordinate we derive
 // where this fragment lands in the window, so the fragment stage can sample
 // the (layered) scene that sits behind the glass without any QML-side
 // mapToItem() bookkeeping.

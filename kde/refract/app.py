@@ -24,7 +24,7 @@ APP_ID = "io.github.RobbyBobby77.Refract"
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="refract", description="Refract: your system at a glance, in Liquid Glass.")
+    p = argparse.ArgumentParser(prog="refract", description="Refract: your system at a glance, through glass.")
     p.add_argument("--page", choices=["performance", "apps", "services"], help="page to open")
     p.add_argument("--device", help="performance device key to select, e.g. memory, disk:nvme0n1")
     p.add_argument("--theme", choices=["system", "light", "dark"], help="override the colour scheme")

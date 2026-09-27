@@ -69,7 +69,7 @@ def main() -> None:
     tagline.setWeight(QFont.Medium)
     p.setFont(tagline)
     p.setPen(QColor(235, 235, 245, 165))
-    p.drawText(QPointF(x + 8, y + 96), "Your system at a glance — in Liquid Glass, for KDE Plasma.")
+    p.drawText(QPointF(x + 8, y + 96), "Your system at a glance — through glass, for KDE Plasma.")
     p.end()
 
     out = HERE / "banner.png"

@@ -145,7 +145,7 @@ Sheet {
                     }
                 }
                 SettingRow {
-                    label: "Liquid Glass"
+                    label: "Glass style"
                     hint: "Clear shows more of what's behind; Tinted adds contrast"
                     PillSegmented {
                         model: [{ key: "0", title: "Clear" }, { key: "1", title: "Tinted" }]

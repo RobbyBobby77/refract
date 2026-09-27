@@ -1,7 +1,7 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-// Liquid Glass segmented control. The selection is a clear glass lens that
+// Glass segmented control. The selection is a clear glass lens that
 // springs between segments and swells while it moves, like the tab bars in
 // iOS/macOS 26.
 GlassSurface {

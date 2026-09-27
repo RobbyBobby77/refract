@@ -5,7 +5,7 @@
     python3 tools/screenshots.py light    # memory, settings
 
 Uses KDE's own "Nuvole" wallpaper (LGPL, ships with Plasma) in Wallpaper mode
-so the Liquid Glass shows, and a throwaway config dir so the user's
+so the glass shows, and a throwaway config dir so the user's
 preferences are neither used nor changed. Graphs need about a minute of
 history, so each run takes ~80 s.
 """

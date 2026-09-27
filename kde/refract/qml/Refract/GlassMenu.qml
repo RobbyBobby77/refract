@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import org.kde.kirigami as Kirigami
 
-// Context menu made of Liquid Glass.
+// Context menu made of glass.
 Popup {
     id: menu
 

@@ -177,7 +177,7 @@ ApplicationWindow {
     }
 
     // =====================================================================
-    // Navigation layer (Liquid Glass)
+    // Navigation layer (glass)
     // =====================================================================
 
     // Title-bar band: drag to move, double-click to zoom.

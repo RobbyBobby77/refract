@@ -1,18 +1,18 @@
 # Refract — developer guide
 
-This folder is **Refract**, a Liquid Glass system monitor for KDE Plasma forked from
+This folder is **Refract**, a glass-themed system monitor for KDE Plasma forked from
 [Mission Center](https://gitlab.com/mission-center-devs/mission-center). For what it looks like and
 how to install it, see the [project page](../.github/README.md); this page is about how it's built.
 AI agents: start with [`AGENTS.md`](AGENTS.md).
 
 ## Design notes
 
-- **Liquid Glass** (`shaders/glass.frag`) is a real refractive material, not a blur + opacity.
+- **The glass** (`shaders/glass.frag`) is a real refractive material, not a blur + opacity.
   The window's content is rendered into a layer; glass surfaces sample it at their screen position
   (derived in the vertex stage), frost it with a mip-biased golden-spiral blur, bend it through a
   convex rim (with slight chromatic dispersion), boost vibrancy, and add a specular hairline that
   catches light on opposite edges.
-- Following Apple's guidance, glass is reserved for the **navigation layer** — sidebar, toolbar
+- Glass is reserved for the **navigation layer** — sidebar, toolbar
   controls, the floating action bar, menus and sheets. Content sits on quieter translucent cards
   (`shaders/panel.frag`) so it stays legible.
 - The window **background** is glass too: a neutral translucent tint over KWin's blur of whatever is

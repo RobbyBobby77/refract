@@ -83,7 +83,7 @@ def main() -> None:
     p.setFont(tagline)
     p.setPen(QColor(235, 235, 245, 175))
     p.drawText(QRectF(76, 448, 520, 120), Qt.TextWordWrap,
-               "Your system at a glance — in Liquid Glass, for KDE Plasma.")
+               "Your system at a glance — through glass, for KDE Plasma.")
     p.end()
 
     out = HERE / "social-preview.png"

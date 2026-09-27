@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 
-// Liquid Glass: the navigation-layer material. It refracts and frosts the
+// Glass: the navigation-layer material. It refracts and frosts the
 // layered scene (Theme.glassSource) that sits behind it. Put it *outside*
 // that scene – glass never samples itself.
 Item {

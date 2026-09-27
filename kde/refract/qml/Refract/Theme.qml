@@ -2,8 +2,8 @@ pragma Singleton
 import QtQuick
 
 // Design tokens. Colours follow Apple's system palette (dark/light variants),
-// the geometry follows the Liquid Glass guidelines: concentric corner radii,
-// generous insets, capsule controls.
+// the geometry uses concentric corner radii, generous insets and capsule
+// controls.
 QtObject {
     id: theme
 

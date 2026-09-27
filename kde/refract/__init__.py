@@ -1,4 +1,4 @@
-"""Refract — a Liquid Glass system monitor for KDE Plasma.
+"""Refract — a system monitor for KDE Plasma, made of glass.
 
 A modified version of Mission Center (https://missioncenter.io) by the Mission
 Center developers, licensed GPL-3.0-or-later.

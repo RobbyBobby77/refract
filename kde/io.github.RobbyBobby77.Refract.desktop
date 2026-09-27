@@ -2,7 +2,7 @@
 Type=Application
 Name=Refract
 GenericName=System Monitor
-Comment=Your system at a glance: CPU, memory, disks, network and GPU, in Liquid Glass
+Comment=Your system at a glance: CPU, memory, disks, network and GPU
 Exec=refract
 Icon=io.github.RobbyBobby77.Refract
 Terminal=false
