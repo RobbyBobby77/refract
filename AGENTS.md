@@ -16,5 +16,6 @@ This repository is **Refract**, a fork of [Mission Center](https://gitlab.com/mi
 
 Remotes and branches: `github` is the fork (`RobbyBobby77/refract`); work on `main`, which tracks
 `github/main`. `origin` is upstream on GitLab (read-only); its `main` is tracked locally as
-`upstream-main`. Release tags are `refract-vX.Y.Z` — plain `vX.Y.Z` tags are upstream Mission
+`upstream-main`. Experiments the user wants to try first live on `testing/*` branches (e.g.
+`testing/desktop-widget`) and are merged into `main` only when they say so. Release tags are `refract-vX.Y.Z` — plain `vX.Y.Z` tags are upstream Mission
 Center's and already exist in this repository.
