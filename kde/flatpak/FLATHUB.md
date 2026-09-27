@@ -1,40 +1,30 @@
 # Publishing Refract on Flathub
 
 The manifest here is ready for Flathub: every source is pinned (the build runs offline), the
-AppStream metadata validates, and `flatpak-builder-lint` reports only the two errors explained
+AppStream metadata validates, and `flatpak-builder-lint` reports only the one error explained
 below. Flathub builds from a release tag on GitHub, using its own copy of the manifest.
 
-## Before the first submission
+## Status
 
-1. **Make the GitHub repository public.** Flathub clones the source, fetches the screenshots from
-   it and checks that the app ID `io.github.RobbyBobby77.Refract` belongs to
-   `github.com/RobbyBobby77/refract` — the linter's `appid-url-not-reachable` error goes away
-   once it's public.
-2. **Tag the release** that Flathub should build (the version in `refract/__init__.py` and the
-   newest `<release>` in `../io.github.RobbyBobby77.Refract.metainfo.xml` must match it):
+The repository is public and `refract-v1.1.0` is tagged. `./flathub-manifest.sh refract-v1.1.0`
+writes the submission files to `flathub/`; built with Flathub's own settings from GitHub, the
+manifest and the built app lint with exactly one error, `finish-args-flatpak-spawn-access`
+(see the exception request below). What's left is the pull request.
 
-   ```sh
-   git tag refract-v1.1.0 && git push github refract-v1.1.0
-   ```
+## Building and linting like Flathub
 
-3. **Write the Flathub manifest** for that tag, then build and lint it exactly as Flathub will:
+Flathub builds a tagged release (the version in `refract/__init__.py` and the newest `<release>`
+in `../io.github.RobbyBobby77.Refract.metainfo.xml` must match the tag). To check one locally
+with Flathub's exact build settings (`flathub-build` mirrors the screenshots and writes full
+media URLs, which the repo lint requires):
 
-   ```sh
-   ./flathub-manifest.sh refract-v1.1.0          # -> flathub/
-   cd flathub
-   flatpak run org.flatpak.Builder --force-clean --sandbox --user --install-deps-from=flathub \
-       --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo \
-       builddir io.github.RobbyBobby77.Refract.yml
-   flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest io.github.RobbyBobby77.Refract.yml
-   flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
-   ```
-
-   Expect exactly one linter error once the repository is public:
-   `finish-args-flatpak-spawn-access` (see below). While it's still private you'll also see
-   `appid-url-not-reachable`, `appstream-missing-screenshots` and
-   `appstream-screenshots-not-mirrored-in-ostree`, which all come from GitHub refusing access.
-   (This whole sequence was rehearsed from a local clone: the git + submodule checkout and the
-   offline build work.)
+```sh
+./flathub-manifest.sh refract-v1.1.0          # -> flathub/
+cd flathub
+flatpak run --command=flathub-build org.flatpak.Builder io.github.RobbyBobby77.Refract.yml
+flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest io.github.RobbyBobby77.Refract.yml
+flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
+```
 
 ## Submitting
 

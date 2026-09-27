@@ -43,6 +43,8 @@ cleanup-commands:
   # Only needed to build PySide itself or for PyOpenGL, which we don't use.
   - rm -rf /app/lib/libclang* /app/lib/python3*/site-packages/shiboken6_generator*
   - pip3 uninstall -y pyopengl
+  # The BaseApp's own AppStream entry would be published as part of Refract.
+  - rm -f /app/share/metainfo/io.qt.PySide.BaseApp.metainfo.xml /app/share/app-info/xmls/io.qt.PySide.BaseApp.xml.gz
 
 cleanup:
   - /include
