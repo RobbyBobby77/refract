@@ -16,6 +16,8 @@ from functools import cache
 from pathlib import Path
 
 IN_FLATPAK = Path("/.flatpak-info").exists()
+# The host's os-release (Flatpak always shares it; /etc/os-release is the runtime's).
+OS_RELEASE = "/run/host/os-release" if IN_FLATPAK else "/etc/os-release"
 
 
 @cache
@@ -36,20 +38,6 @@ def host(argv: list[str], *, watch: bool = False, env: dict[str, str] | None = N
         return argv
     return ["flatpak-spawn", "--host", "--directory=/", *(["--watch-bus"] if watch else []),
             *(f"--env={k}={v}" for k, v in (env or {}).items()), *argv]
-
-
-def host_path(path: str | Path) -> Path:
-    """A host file path as it appears in here. With the host-os permission
-    the host's /usr is mounted at /run/host/usr; the home folders the manifest
-    grants (Pictures, wallpapers…) keep their paths."""
-    p = Path(path)
-    if not IN_FLATPAK:
-        return p
-    if p == Path("/etc/os-release"):
-        return Path("/run/host/os-release")
-    if p.parts[1:2] == ("usr",):
-        return Path("/run/host") / p.relative_to("/")
-    return p
 
 
 def outside_path(path: str | Path) -> str:

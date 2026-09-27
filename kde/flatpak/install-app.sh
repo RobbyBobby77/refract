@@ -18,6 +18,18 @@ cmake --build build-native --parallel
 install -m755 build-native/librefract_effects.so "$NATIVE/"
 
 # magpie (runs on the host; see refract/sandbox.py) and the bridge to it.
+# magpie's build downloads and patches nvtop unless it finds it in place: the
+# manifest provides it, so patch it and put it there. Like magpie's own build
+# (and Mission Center's Flatpak), a patch that doesn't apply is only a warning.
+nvtop_dir=subprojects/magpie/platform-linux/3rdparty/nvtop
+nvtop=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["directory"])' "$nvtop_dir/nvtop.json")
+if [ -d "$nvtop" ]; then
+    for patch in $(python3 -c 'import json, sys; print(*json.load(open(sys.argv[1]))["patches"])' "$nvtop_dir/nvtop.json"); do
+        patch -d "$nvtop" -p1 -i "$PWD/$nvtop_dir/$patch" || echo "warning: $patch didn't fully apply"
+    done
+    mkdir -p subprojects/magpie/target/release/build/native
+    mv "$nvtop" subprojects/magpie/target/release/build/native/
+fi
 cargo build --release --manifest-path subprojects/magpie/Cargo.toml
 cargo build --release --manifest-path kde/magpie-bridge/Cargo.toml
 install -m755 subprojects/magpie/target/release/magpie "$NATIVE/magpie"

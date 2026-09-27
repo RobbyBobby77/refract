@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import threading
+import time
 import traceback
 from typing import Any
 
@@ -237,6 +238,7 @@ class Monitor(QObject):
     wallpaperChanged = Signal()
     actionFinished = Signal(str, bool, str)       # title, ok, message
     logsReady = Signal(str, str)                  # unit, text
+    _wallpaperFound = Signal(object)              # (light, dark) URLs, from a worker thread
 
     # cross-thread requests to the worker
     _reqInterval = Signal(int)
@@ -260,12 +262,21 @@ class Monitor(QObject):
         self._notify = True
         self._window: QObject | None = None
         self._process_interval = 2000
-        self._wallpapers = wallpaper.resolve()
-        # Follow wallpaper changes. Plasma rewrites its config atomically, which
-        # drops the inotify watch, so the path is re-added after every change.
-        self._wallpaper_watch = QFileSystemWatcher(self)
-        self._wallpaper_watch.fileChanged.connect(self._on_wallpaper_config)
-        self._watch_wallpaper_config()
+        if sandbox.IN_FLATPAK:
+            # The sandbox can't watch Plasma's config. Look again (off the UI
+            # thread: it takes host calls) at startup and whenever the window is
+            # activated, e.g. after changing the wallpaper in System Settings.
+            self._wallpapers = ("", "")
+            self._wallpaper_checked = 0.0
+            self._wallpaperFound.connect(self._on_wallpaper_found)
+            self._refresh_wallpaper()
+        else:
+            self._wallpapers = wallpaper.resolve()
+            # Follow wallpaper changes. Plasma rewrites its config atomically, which
+            # drops the inotify watch, so the path is re-added after every change.
+            self._wallpaper_watch = QFileSystemWatcher(self)
+            self._wallpaper_watch.fileChanged.connect(self._on_wallpaper_config)
+            self._watch_wallpaper_config()
 
         self._devices = DeviceModel(self)
         self._processes = ProcessModel(self)
@@ -456,6 +467,8 @@ class Monitor(QObject):
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:
         if obj is self._window and event.type() in _VISIBILITY_EVENTS:
             QTimer.singleShot(0, self._check_on_screen)
+            if sandbox.IN_FLATPAK and event.type() == QEvent.Type.WindowActivate:
+                self._refresh_wallpaper()
         return False
 
     def _check_on_screen(self) -> None:
@@ -498,7 +511,18 @@ class Monitor(QObject):
     @Slot(str)
     def _on_wallpaper_config(self, _path: str) -> None:
         self._watch_wallpaper_config()
-        urls = wallpaper.resolve()
+        self._on_wallpaper_found(wallpaper.resolve())
+
+    def _refresh_wallpaper(self) -> None:
+        now = time.monotonic()
+        if now - self._wallpaper_checked < 5:
+            return
+        self._wallpaper_checked = now
+        threading.Thread(target=lambda: self._wallpaperFound.emit(wallpaper.resolve()), daemon=True).start()
+
+    @Slot(object)
+    def _on_wallpaper_found(self, urls: tuple[str, str]) -> None:
+        urls = tuple(urls)
         if urls != self._wallpapers:
             self._wallpapers = urls
             self.wallpaperChanged.emit()

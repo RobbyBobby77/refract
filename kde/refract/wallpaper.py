@@ -3,17 +3,96 @@ the way macOS windows pick up colour from the desktop behind them."""
 
 from __future__ import annotations
 
+import hashlib
 import os
+import subprocess
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from PySide6.QtCore import QUrl
 
-from .sandbox import host_path
+from . import sandbox
 
 _IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".avif", ".jxl", ".bmp"}
-_FALLBACK = host_path("/usr/share/wallpapers/Next")
+_FALLBACK = Path("/usr/share/wallpapers/Next")
 CONFIG = Path.home() / ".config" / "plasma-org.kde.plasma.desktop-appletsrc"
+
+
+class _Files:
+    """The file system the wallpaper is on: here, the one we can see."""
+
+    def is_file(self, p: Path) -> bool:
+        return p.is_file()
+
+    def is_dir(self, p: Path) -> bool:
+        return p.is_dir()
+
+    def children(self, p: Path) -> list[Path]:
+        try:
+            return sorted(p.iterdir())
+        except OSError:
+            return []
+
+    def probe(self, roots: list[Path]) -> None:
+        """Get ready to answer questions about `roots` and what's under them."""
+
+    def local(self, p: Path) -> Path:
+        """A path we can open for `p`."""
+        return p
+
+    def done(self) -> None:
+        pass
+
+
+class _HostFiles(_Files):
+    """The host's files as seen from the Flatpak sandbox, which can't read
+    them: a host call lists everything under the candidate paths, and the
+    chosen images are copied into our cache (the same path on both sides)."""
+
+    _LIST = 'for p; do find -L "$p" -maxdepth 4 -type d | sed "s/^/d /"; ' \
+            'find -L "$p" -maxdepth 4 -type f | sed "s/^/f /"; done'
+
+    def __init__(self) -> None:
+        self._dirs: set[Path] = set()
+        self._files: set[Path] = set()
+        self._copies: set[Path] = set()
+        self._cache = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "refract" / "wallpaper"
+
+    def probe(self, roots: list[Path]) -> None:
+        try:
+            out = subprocess.run(sandbox.host(["sh", "-c", self._LIST, "sh", *map(str, roots)]),
+                                 capture_output=True, text=True, errors="replace", timeout=10).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            return
+        for line in out.splitlines():
+            kind, _, path = line.partition(" ")
+            (self._dirs if kind == "d" else self._files).add(Path(path))
+
+    def is_file(self, p: Path) -> bool:
+        return p in self._files
+
+    def is_dir(self, p: Path) -> bool:
+        return p in self._dirs
+
+    def children(self, p: Path) -> list[Path]:
+        return sorted(c for c in self._dirs | self._files if c.parent == p)
+
+    def local(self, p: Path) -> Path:
+        name = hashlib.sha1(str(p).encode()).hexdigest()[:16] + p.suffix.lower()
+        copy = self._cache / name
+        self._cache.mkdir(parents=True, exist_ok=True)
+        try:
+            subprocess.run(sandbox.host(["cp", "-u", str(p), str(copy)]), capture_output=True, timeout=10)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+        self._copies.add(copy)
+        return copy
+
+    def done(self) -> None:
+        """Forget copies of earlier wallpapers."""
+        for f in self._cache.iterdir() if self._cache.is_dir() else []:
+            if f not in self._copies:
+                f.unlink(missing_ok=True)
 
 
 def _to_path(value: str) -> Path | None:
@@ -22,15 +101,14 @@ def _to_path(value: str) -> Path | None:
         return None
     if value.startswith("file:"):
         value = unquote(urlparse(value).path)
-    p = host_path(os.path.expanduser(value))
-    return p if p.exists() else None
+    return Path(os.path.expanduser(value))
 
 
-def _best_image(folder: Path) -> Path | None:
+def _best_image(folder: Path, fs: _Files) -> Path | None:
     """Pick the image closest to a 16:10 laptop panel, preferring large ones."""
     best, best_score = None, None
-    for f in folder.iterdir() if folder.is_dir() else []:
-        if f.suffix.lower() not in _IMAGE_EXT:
+    for f in fs.children(folder):
+        if f.suffix.lower() not in _IMAGE_EXT or not fs.is_file(f):
             continue
         try:
             w, h = (int(x) for x in f.stem.split("x", 1))
@@ -42,14 +120,17 @@ def _best_image(folder: Path) -> Path | None:
     return best
 
 
-def _from_package(pkg: Path) -> tuple[Path | None, Path | None]:
-    light = _best_image(pkg / "contents" / "images")
-    dark = _best_image(pkg / "contents" / "images_dark") or light
+def _from_package(pkg: Path, fs: _Files = _Files()) -> tuple[Path | None, Path | None]:
+    light = _best_image(pkg / "contents" / "images", fs)
+    dark = _best_image(pkg / "contents" / "images_dark", fs) or light
     return light, dark
 
 
 def _from_plasmashell() -> Path | None:
-    """Ask the running Plasma shell which image is on screen 0."""
+    """Ask the running Plasma shell which image is on screen 0. (Not from the
+    Flatpak: talking to plasmashell would let it script the desktop.)"""
+    if sandbox.IN_FLATPAK:
+        return None
     try:
         import dbus
 
@@ -77,42 +158,52 @@ def _kde_groups(text: str) -> dict[str, dict[str, str]]:
     return groups
 
 
-def _from_config() -> Path | None:
-    """Read the wallpaper from Plasma's config, preferring desktops on screen 0."""
+def _from_config() -> tuple[list[Path], list[Path]]:
+    """Plasma's config: the desktops' images (screen 0 first) and slideshow folders."""
     try:
-        groups = _kde_groups(CONFIG.read_text(encoding="utf-8", errors="replace"))
-    except OSError:
-        return None
+        if sandbox.IN_FLATPAK:
+            text = subprocess.run(sandbox.host(["cat", str(CONFIG)]), capture_output=True, text=True,
+                                  errors="replace", timeout=5).stdout
+        else:
+            text = CONFIG.read_text(encoding="utf-8", errors="replace")
+    except (OSError, subprocess.TimeoutExpired):
+        return [], []
+    groups = _kde_groups(text)
     candidates = []
+    folders = []
     for name, entries in groups.items():
-        if not name.endswith("[Wallpaper][org.kde.image][General]"):
-            continue
-        containment = groups.get(name.split("[Wallpaper]", 1)[0], {})
-        on_first_screen = containment.get("lastScreen") == "0"
-        candidates.append((not on_first_screen, entries.get("Image", "")))
-    for _, image in sorted(candidates):
-        p = _to_path(image)
-        if p:
-            return p
-    for name, entries in groups.items():
-        if name.endswith("[Wallpaper][org.kde.slideshow][General]"):
-            for folder in entries.get("SlidePaths", "").split(","):
-                p = _to_path(folder)
-                if p and p.is_dir():
-                    for child in sorted(p.iterdir()):
-                        if (child / "contents").is_dir():
-                            return child
-    return None
+        if name.endswith("[Wallpaper][org.kde.image][General]"):
+            containment = groups.get(name.split("[Wallpaper]", 1)[0], {})
+            on_first_screen = containment.get("lastScreen") == "0"
+            candidates.append((not on_first_screen, entries.get("Image", "")))
+        elif name.endswith("[Wallpaper][org.kde.slideshow][General]"):
+            folders += [_to_path(f) for f in entries.get("SlidePaths", "").split(",")]
+    images = [_to_path(image) for _, image in sorted(candidates)]
+    return [p for p in images if p], [p for p in folders if p]
 
 
 def resolve() -> tuple[str, str]:
     """Return (light, dark) wallpaper URLs; empty strings if none found."""
-    source = _from_plasmashell() or _from_config() or (_FALLBACK if _FALLBACK.exists() else None)
+    shell = _from_plasmashell()
+    images, folders = _from_config()
+    candidates = [p for p in (shell, *images) if p]
+    fs = _HostFiles() if sandbox.IN_FLATPAK else _Files()
+    fs.probe([*candidates, _FALLBACK])
+
+    source = next((p for p in candidates if fs.is_file(p) or fs.is_dir(p)), None)
+    if source is None and folders:   # a slideshow: its first wallpaper package
+        fs.probe(folders)
+        source = next((child for folder in folders for child in fs.children(folder)
+                       if fs.is_dir(child / "contents")), None)
+    if source is None and fs.is_dir(_FALLBACK):
+        source = _FALLBACK
     light = dark = None
     if source is not None:
-        if source.is_dir():
-            light, dark = _from_package(source)
+        if fs.is_dir(source):
+            light, dark = _from_package(source, fs)
         elif source.suffix.lower() in _IMAGE_EXT:
             light = dark = source
-    as_url = lambda p: QUrl.fromLocalFile(str(p)).toString() if p else ""  # noqa: E731
-    return as_url(light), as_url(dark)
+    as_url = lambda p: QUrl.fromLocalFile(str(fs.local(p))).toString() if p else ""  # noqa: E731
+    urls = as_url(light), as_url(dark)
+    fs.done()
+    return urls

@@ -12,7 +12,9 @@ kde/
   bin/refract                run from the checkout (sets PYTHONPATH)
   install.sh                 per-user install to ~/.local (+ --deps, --uninstall); builds native parts
   build-native.sh            KWin blur helper (C++) + magpie + bridge (Rust) + magpie's hw.db
-  flatpak/                   Flatpak manifest; build.sh -> refract.flatpak; install-app.sh (runs in the build)
+  flatpak/                   Flatpak manifest (Flathub-ready: offline, pinned sources); build.sh -> refract.flatpak;
+                             install-app.sh (runs in the build); cargo-sources.json (+ update-cargo-sources.sh);
+                             flathub-manifest.sh TAG -> flathub/ (submission copy); FLATHUB.md (how to submit)
   io.github.RobbyBobby77.Refract.{desktop,metainfo.xml}   desktop entry, AppStream data
   build-shaders.sh           GLSL -> .qsb (compiled packs are committed)
   branding/                  icon, banner and social-preview generators + brand guide (branding/README.md)
@@ -28,7 +30,7 @@ kde/
     models.py                DeviceModel, ProcessModel, ServiceModel (positional)
     effects.py               WindowEffects (QML `WindowEffects`): KWin blur via ctypes
     wallpaper.py             current Plasma wallpaper (plasmashell D-Bus, KConfig fallback)
-    sandbox.py               Flatpak: host() / host_path() / magpie_command(); no-ops outside Flatpak
+    sandbox.py               Flatpak: host() / OS_RELEASE / magpie_command(); no-ops outside Flatpak
     backend/magpie.py        magpie client + adapters to the snapshot schema
     backend/collectors.py    Python fallback: CPU/mem/disk/net/GPU/fans/battery
     backend/processes.py     Python fallback: processes/apps; also signal_process, process_details
@@ -56,6 +58,8 @@ cd kde
 ./install.sh --deps        # first install distro packages (dnf/pacman/zypper/apt; only Fedora names verified)
 ./flatpak/build.sh --install   # build refract.flatpak (~10 min cold) and install it for the user
 flatpak run io.github.RobbyBobby77.Refract   # run the installed Flatpak
+flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest flatpak/io.github.RobbyBobby77.Refract.yml
+./flatpak/update-cargo-sources.sh   # after magpie or magpie-bridge/Cargo.lock changes
 MC_ENGINE=python ./bin/refract   # force the Python collectors
 python3 -m refract.backend    # self-test of the Python collectors
 ```
@@ -111,11 +115,18 @@ to see Qt/scenegraph logs. QML warnings are already routed to Python logging ("Q
 - Process actions go through `Monitor.signalProcesses(pids, starts, …)`; `starts` (process
   start ticks) guard against recycled PIDs — keep passing them.
 - **Flatpak: anything that looks at or acts on the system goes through `sandbox.py`.** In the
-  sandbox, `/proc` only lists the sandbox's own processes, host PIDs can't be signalled, host
-  `/usr` is at `/run/host/usr`, and `systemctl`/`journalctl`/`pkexec` don't exist. Run commands
-  with `subprocess.run(sandbox.host([...]))` and map host paths with `sandbox.host_path()`.
-  `/proc/stat`, `/proc/meminfo` and `/sys` are the host's and fine to read directly. New host
-  access may need a `finish-args` permission in `flatpak/io.github.RobbyBobby77.Refract.yml`.
+  sandbox, `/proc` only lists the sandbox's own processes, host PIDs can't be signalled, the
+  host's files (wallpapers, Plasma's config) aren't visible, and `systemctl`/`journalctl`/
+  `pkexec` don't exist. Run commands with `subprocess.run(sandbox.host([...]))`; read or copy
+  host files with host commands (see `wallpaper._HostFiles`). `/proc/stat`, `/proc/meminfo`,
+  `/sys` and `/run/host/os-release` are the host's and fine to read directly.
+- **Keep the Flatpak's permissions minimal — don't add `finish-args`.** It has only
+  `--talk-name=org.freedesktop.Flatpak` (flatpak-spawn, which needs a Flathub linter exception,
+  as Mission Center has) plus display and `kdeglobals`. Everything else goes through the host:
+  services use host `systemctl` instead of systemd's D-Bus, the wallpaper comes from host `cat`/
+  `find`/`cp` instead of plasmashell's D-Bus (which could script the desktop) or file access,
+  and magpie sends app icons as image data. Each new permission is another linter error to
+  justify to Flathub's reviewers.
 - Heavy or rarely visible views must be lazily instantiated (`Loader`), e.g. the 32-graph
   per-core grid; bindings on hidden items still evaluate every tick.
 - Cost control: every magpie request makes magpie refresh that category, so request only

@@ -2,17 +2,17 @@
 <component type="desktop-application">
   <id>io.github.RobbyBobby77.Refract</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>GPL-3.0-or-later</project_license>
+  <project_license>GPL-3.0-or-later AND OFL-1.1</project_license>
   <name>Refract</name>
-  <summary>Your system at a glance, in Liquid Glass</summary>
+  <summary>System monitor in Liquid Glass</summary>
   <developer id="io.github.robbybobby77">
     <name>RobbyBobby77</name>
   </developer>
   <description>
     <p>
-      Refract is a system monitor for KDE Plasma, designed the way Apple would have made it:
-      a refractive Liquid Glass sidebar, toolbar, menus and sheets over a window that shows your
-      desktop through KWin's own blur.
+      Refract is a system monitor for KDE Plasma with a Liquid Glass design: a refractive glass
+      sidebar, toolbar, menus and sheets over a window that shows your desktop through KWin's
+      own blur.
     </p>
     <ul>
       <li>Live graphs for every CPU core, memory, disks, Wi-Fi and Ethernet, GPUs, fans and batteries</li>
@@ -48,6 +48,10 @@
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#c9c3ff</color>
+    <color type="primary" scheme_preference="dark">#3b3580</color>
+  </branding>
   <supports>
     <control>pointing</control>
     <control>keyboard</control>
@@ -58,8 +62,11 @@
   <releases>
     <release version="1.1.0" date="2026-09-26">
       <description>
-        <p>Easier installation: a Flatpak, and install.sh --deps to install the dependencies.
-        Network adapters now show their model names.</p>
+        <p>Refract is now available as a Flatpak.</p>
+        <ul>
+          <li>Network adapters show their model names</li>
+          <li>install.sh --deps installs the dependencies for a source install</li>
+        </ul>
       </description>
     </release>
     <release version="1.0.0" date="2026-09-26">

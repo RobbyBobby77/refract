@@ -66,9 +66,19 @@ build files go to `~/.cache/refract-flatpak`.
   `/.flatpak-info`; that makes it independent of the host's glibc. The bridge stays in the sandbox
   and they meet on a socket in `$XDG_RUNTIME_DIR/app/<app id>`, which both sides can see.
 - `/proc` in the sandbox only shows the sandbox, and signals can't cross it: process owners,
-  process details, Stop/Quit/Force Quit, `systemctl`, `journalctl` and the programs Refract opens
-  all run on the host too. `refract/sandbox.py` has the helpers (`host()`, `host_path()`); outside
-  Flatpak they change nothing.
+  process details, Stop/Quit/Force Quit, the services list, `journalctl` and the programs Refract
+  opens all run on the host too, and the wallpaper is copied in from there. `refract/sandbox.py`
+  has the helpers; outside Flatpak they change nothing.
+- That keeps the permissions to one that matters, `org.freedesktop.Flatpak` (flatpak-spawn), plus
+  display access and KDE's colour settings.
+
+### Flathub
+
+The manifest is Flathub-ready: every source is pinned, so it builds offline. Rust crates are listed
+in `flatpak/cargo-sources.json` — run `flatpak/update-cargo-sources.sh` after magpie or the bridge's
+`Cargo.lock` changes. `flatpak/flathub-manifest.sh TAG` writes the copy Flathub builds (from a
+release tag on GitHub) to `flatpak/flathub/`; [`flatpak/FLATHUB.md`](flatpak/FLATHUB.md) walks
+through submitting and updating it.
 
 ## Layout
 

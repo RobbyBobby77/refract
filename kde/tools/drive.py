@@ -14,6 +14,7 @@ file name, relative to --out) is saved after the JS ran; use "" to skip.
 grid, Settings, the Apps page with its menu, details sheet and tree mode, and
 the Services page with its details sheet.
 
+Runs on a copy of your settings, so steps that change Prefs don't stick.
 Exit status is 1 if any QML warning or JS error was logged. Screenshots come
 from QQuickWindow.grabWindow(), which does not include KWin's blur-behind;
 use `spectacle -b -n -f -o FILE` for a composited capture.
@@ -22,16 +23,30 @@ use `spectacle -b -n -f -o FILE` for a composited capture.
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import logging
+import os
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from PySide6.QtCore import QCoreApplication, QTimer  # noqa: E402
+from PySide6.QtCore import QCoreApplication, QSettings, QTimer  # noqa: E402
 
 from refract.app import Session, parse_args  # noqa: E402
+
+
+def _scratch_settings() -> None:
+    """Point Refract's settings at a throwaway copy of the user's."""
+    real = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "Refract"
+    scratch = Path(tempfile.mkdtemp(prefix="refract-drive-"))
+    atexit.register(shutil.rmtree, scratch, True)
+    if real.is_dir():
+        shutil.copytree(real, scratch / "Refract")
+    QSettings.setPath(QSettings.Format.NativeFormat, QSettings.Scope.UserScope, str(scratch))
 
 
 class _ProblemCounter(logging.Handler):
@@ -94,6 +109,7 @@ def main() -> int:
     counter = _ProblemCounter()
     logging.getLogger().addHandler(counter)
     # --screenshot keeps the run from overwriting the user's last page/device.
+    _scratch_settings()
     session = Session(parse_args(["--size", "1320x860", "--screenshot", "-"] + app_args))
     if session.window is None:
         session.close(1)

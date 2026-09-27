@@ -12,7 +12,9 @@ from .. import sandbox
 _DETAIL_BUDGET_S = 1.5
 
 
-def _fallback(user: bool) -> list[dict]:
+def _with_systemctl(user: bool) -> list[dict]:
+    """The same listing from systemctl: the fallback without D-Bus, and the
+    Flatpak's way (it runs systemctl on the host, so it needs no bus access)."""
     prefix = ['systemctl'] + (['--user'] if user else [])
     try:
         units = subprocess.run(sandbox.host(prefix+['list-units','--type=service','--all','--output=json']),
@@ -40,11 +42,26 @@ def _fallback(user: bool) -> list[dict]:
                                       'active_state':'inactive','sub_state':'dead','enabled_state':None,
                                       'pid':None,'memory':None,'user':user})
         row['enabled_state'] = item.get('state')
+    active = [name for name,row in result.items() if row['active_state']=='active']
+    if active:
+        try:
+            shown = subprocess.run(sandbox.host(prefix+['show','--property=Id,MainPID,MemoryCurrent',*active]),
+                                   capture_output=True,text=True,timeout=3).stdout
+        except (OSError,subprocess.TimeoutExpired):
+            shown = ''
+        for block in shown.split('\n\n'):
+            props = dict(line.split('=',1) for line in block.splitlines() if '=' in line)
+            row = result.get(props.get('Id',''))
+            if row:
+                row['pid'] = int(props['MainPID']) if props.get('MainPID','0').isdigit() and props['MainPID']!='0' else None
+                row['memory'] = int(props['MemoryCurrent']) if props.get('MemoryCurrent','').isdigit() else None
     return sorted(result.values(),key=lambda r:r['name'])
 
 
 def list_services(user: bool = False) -> list[dict]:
     """List loaded and installed systemd services on the chosen bus."""
+    if sandbox.IN_FLATPAK:
+        return _with_systemctl(user)
     try:
         import dbus
         bus = dbus.SessionBus() if user else dbus.SystemBus()
@@ -85,7 +102,7 @@ def list_services(user: bool = False) -> list[dict]:
             row['enabled_state'] = str(state)
         return sorted(result.values(),key=lambda row:row['name'])
     except Exception:
-        return _fallback(user)
+        return _with_systemctl(user)
 
 
 def service_action(name: str, action: str, user: bool = False) -> tuple[bool,str]:
