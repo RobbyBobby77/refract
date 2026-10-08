@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 
 // A round (or capsule, when it has text) glass button.
 GlassSurface {
@@ -31,7 +30,7 @@ GlassSurface {
         id: row
         anchors.centerIn: parent
         spacing: 7
-        Kirigami.Icon {
+        Icon {
             visible: btn.iconName !== "" || btn.iconSource !== ""
             anchors.verticalCenter: parent.verticalCenter
             width: 17; height: 17

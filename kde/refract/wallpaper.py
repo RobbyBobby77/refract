@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import os
 import subprocess
+import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -184,6 +185,11 @@ def _from_config() -> tuple[list[Path], list[Path]]:
 
 def resolve() -> tuple[str, str]:
     """Return (light, dark) wallpaper URLs; empty strings if none found."""
+    if sys.platform == "win32":
+        from .backend.windows_native import wallpaper_path
+        path = wallpaper_path()
+        url = QUrl.fromLocalFile(path).toString() if path and Path(path).is_file() else ""
+        return url, url
     shell = _from_plasmashell()
     images, folders = _from_config()
     candidates = [p for p in (shell, *images) if p]

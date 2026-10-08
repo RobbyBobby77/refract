@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 
 // Glass segmented control. The selection is a clear glass lens that
 // springs between segments and swells while it moves, like the tab bars in
@@ -75,7 +74,7 @@ GlassSurface {
                     id: segContent
                     anchors.centerIn: parent
                     spacing: 7
-                    Kirigami.Icon {
+                    Icon {
                         visible: !!(segItem.modelData.icon || segItem.modelData.iconSource)
                         anchors.verticalCenter: parent.verticalCenter
                         width: 16; height: 16

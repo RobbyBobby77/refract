@@ -1,0 +1,58 @@
+name: Windows
+on:
+  pull_request:
+    paths: ['kde/**', '.github/workflows/windows.yml']
+  push:
+    branches: [main]
+    paths: ['kde/**', '.github/workflows/windows.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Build portable application
+        shell: pwsh
+        run: ./kde/windows/build.ps1
+      - name: Test Windows backend
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH = (Resolve-Path kde).Path
+          ./kde/.venv/Scripts/python.exe -m unittest discover -s kde/tests -v
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Exercise every UI page
+        shell: pwsh
+        env:
+          QSG_RHI_PREFER_SOFTWARE_RENDERER: '1'
+          QT_FORCE_STDERR_LOGGING: '1'
+        run: |
+          ./kde/.venv/Scripts/python.exe kde/tools/drive.py --smoke --out windows-shots
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Verify packaged launch and resources
+        shell: pwsh
+        env:
+          QSG_RHI_PREFER_SOFTWARE_RENDERER: '1'
+        run: |
+          $p = Start-Process ./kde/windows/dist/Refract/Refract.exe -ArgumentList '--screenshot', 'packaged.png', '--delay', '4000' -PassThru -WindowStyle Hidden
+          if (-not $p.WaitForExit(30000)) { $p.Kill(); throw 'Packaged app timed out' }
+          if ($p.ExitCode -ne 0 -or -not (Test-Path packaged.png)) { throw 'Packaged app failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Refract-Windows-x64
+          path: kde/windows/dist/Refract-Windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Windows-screenshots
+          path: |
+            windows-shots/
+            packaged.png

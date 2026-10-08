@@ -140,7 +140,7 @@ DeviceView {
                 ["Sockets", v.info.sockets],
                 ["Cores", v.info.cores],
                 ["Logical processors", v.info.logical],
-                ["Virtualization", v.info.virtualization ? v.info.virtualization + " (enabled)" : "Unsupported"],
+                ["Virtualization", v.info.virtualization ? v.info.virtualization + " (enabled)" : IsWindows ? "" : "Unsupported"],
                 ["Virtual machine", v.info.is_vm === undefined ? "" : (v.info.is_vm ? "Yes" : "No")],
                 ["L1 cache", l1 ? Fmt.bytes(l1, 1) : ""],
                 ["L2 cache", c.L2 ? Fmt.bytes(c.L2, 1) : ""],

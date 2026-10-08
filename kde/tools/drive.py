@@ -34,6 +34,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+if sys.platform == "win32":
+    # Advance animations during unattended captures even when Windows pauses
+    # presentation of an occluded test window.
+    os.environ.setdefault("QSG_RENDER_LOOP", "basic")
+    os.environ.setdefault("QSG_NO_VSYNC", "1")
+
 from PySide6.QtCore import QCoreApplication, QSettings, QTimer  # noqa: E402
 
 from refract.app import Session, parse_args  # noqa: E402
@@ -46,7 +52,9 @@ def _scratch_settings() -> None:
     atexit.register(shutil.rmtree, scratch, True)
     if real.is_dir():
         shutil.copytree(real, scratch / "Refract")
-    QSettings.setPath(QSettings.Format.NativeFormat, QSettings.Scope.UserScope, str(scratch))
+    if sys.platform == "win32":
+        QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(QSettings.defaultFormat(), QSettings.Scope.UserScope, str(scratch))
 
 
 class _ProblemCounter(logging.Handler):
@@ -67,8 +75,9 @@ def smoke_steps(session: Session) -> list[tuple[int, str, str]]:
         "JSON.stringify(Array.from({ length: Monitor.devices.count }, (_, i) => Monitor.devices.get(i).key))") or "[]")
     steps: list[tuple[int, str, str]] = []
     for i, key in enumerate(keys):
+        filename_key = key.replace(':', '_').replace('\\', '_').replace('/', '_')
         steps.append((200, f"win.device = {json.dumps(key)}", ""))
-        steps.append((900, "", f"device-{i:02d}-{key.replace(':', '_')}.png"))
+        steps.append((900, "", f"device-{i:02d}-{filename_key}.png"))
     steps += [
         (200, "win.device = 'cpu'; Prefs.cpuPerCore = true", ""),
         (900, "", "cpu-per-core.png"),
@@ -98,7 +107,10 @@ def main() -> int:
     cli.add_argument("steps", nargs="?", help="JSON steps file (omit with --smoke)")
     cli.add_argument("--smoke", action="store_true", help="visit every page, sheet and device")
     cli.add_argument("--out", help="directory for screenshots (none are saved without it)")
+    cli.add_argument("--theme", choices=("system", "light", "dark"), help="app color scheme")
     args, app_args = cli.parse_known_args()
+    if args.theme:
+        app_args += ["--theme", args.theme]
     if not args.smoke and not args.steps:
         cli.error("give a steps file or --smoke")
 

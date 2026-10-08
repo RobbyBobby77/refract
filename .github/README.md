@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="#install"><img alt="KDE Plasma 6" src="https://img.shields.io/badge/KDE%20Plasma-6-1D99F3?style=flat-square&logo=kde&logoColor=white"/></a>
+  <a href="../kde/windows/README.md"><img alt="Windows 10 / 11" src="https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4?style=flat-square"/></a>
   <img alt="Qt 6 + QML" src="https://img.shields.io/badge/Qt%206-QML-41CD52?style=flat-square&logo=qt&logoColor=white"/>
   <a href="#credits--licence"><img alt="GPL-3.0-or-later" src="https://img.shields.io/badge/licence-GPL--3.0--or--later-A37BFF?style=flat-square"/></a>
   <a href="#credits--licence"><img alt="Based on Mission Center" src="https://img.shields.io/badge/based%20on-Mission%20Center-FF5A82?style=flat-square"/></a>
@@ -17,6 +18,18 @@
 <p align="center">
   <img src="https://github.com/RobbyBobby77/refract/raw/main/kde/screenshots/performance-dark.png" alt="Refract's Performance page: a glass sidebar of live device graphs beside CPU utilization, stats and processor details" width="900"/>
 </p>
+
+## Windows
+
+Refract also runs natively on 64-bit Windows 10 and 11. The Windows backend samples
+CPU, memory, disks, network, WDDM graphics adapters, battery, processes, and Windows
+services. It includes a portable executable build and PowerShell source launcher.
+
+See the [Windows guide](../kde/windows/README.md) for launch/build instructions,
+supported counters, and platform differences. The feature details below describe
+the KDE version; KWin desktop blur and Linux hardware sensors are unavailable on Windows.
+
+![Refract running on Windows](../kde/screenshots/windows-performance.png)
 
 ## Why Refract
 

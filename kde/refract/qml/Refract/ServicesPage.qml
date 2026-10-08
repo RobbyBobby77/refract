@@ -40,7 +40,8 @@ Item {
     }
     function startupText(s) {
         switch (s) {
-        case "enabled": case "enabled-runtime": return "Enabled"
+        case "enabled": case "enabled-runtime": return IsWindows ? "Automatic" : "Enabled"
+        case "manual": return "Manual"
         case "disabled": return "Disabled"
         case "static": return "Static"
         case "masked": case "masked-runtime": return "Masked"
@@ -85,6 +86,7 @@ Item {
         }
     }
     PillSegmented {
+        visible: !IsWindows
         anchors.right: parent.right
         anchors.rightMargin: 22
         anchors.verticalCenter: titleRow.verticalCenter
@@ -228,7 +230,7 @@ Item {
         Text {
             anchors.centerIn: table
             visible: !page.model.loaded
-            text: "Asking systemd…"
+            text: IsWindows ? "Loading Windows services…" : "Asking systemd…"
             font.pixelSize: 14
             color: Theme.secondaryLabel
         }

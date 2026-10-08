@@ -100,7 +100,7 @@ Sheet {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
-            text: "Your system at a glance — through glass, for KDE Plasma."
+            text: IsWindows ? "Your system at a glance — through glass, for Windows." : "Your system at a glance — through glass, for KDE Plasma."
             font.pixelSize: 14
             color: Theme.label
         }

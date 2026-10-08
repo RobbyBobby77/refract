@@ -5,6 +5,11 @@ This folder is **Refract**, a glass-themed system monitor for KDE Plasma forked 
 how to install it, see the [project page](../.github/README.md); this page is about how it's built.
 AI agents: start with [`AGENTS.md`](AGENTS.md).
 
+The same Qt Quick interface now runs on Windows 10/11 x64 with a separate native
+backend and portable package. See the [Windows guide](windows/README.md) for setup,
+builds, testing, and feature coverage. Linux runtime dependency instructions below
+apply to the KDE version.
+
 ## Design notes
 
 - **The glass** (`shaders/glass.frag`) is a real refractive material, not a blur + opacity.
@@ -33,6 +38,11 @@ That brings nvtop-based GPU data (encode/decode, per-process GPU use for every v
 disk info, battery history and Mission Center's app detection, at a fraction of the CPU cost.
 Without the native build, pure-Python collectors (`backend/collectors.py`, `processes.py`) take over;
 services always use systemd over D-Bus. Settings → Performance shows which engine is running.
+
+On Windows, `backend/__init__.py` selects `windows.py` and never imports the Linux
+process modules. `windows_native.py` provides PDH, DXGI, process snapshots, and desktop
+metadata through ctypes. Icons load Kirigami on Linux and a Qt image provider on
+Windows. Services use the Windows Service Control Manager.
 
 ## Running from a checkout
 

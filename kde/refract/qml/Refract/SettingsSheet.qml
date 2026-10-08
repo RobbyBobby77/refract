@@ -134,7 +134,7 @@ Sheet {
                                     color: "white"
                                 }
                                 ToolTipBubble {
-                                    text: swatch.modelData === "multicolor" ? "Multicolour" : swatch.modelData === "system" ? "KDE accent colour" : ""
+                                    text: swatch.modelData === "multicolor" ? "Multicolour" : swatch.modelData === "system" ? (IsWindows ? "System accent colour" : "KDE accent colour") : ""
                                     shown: swatchHover.hovered
                                 }
                                 TapHandler { onTapped: Prefs.accent = swatch.modelData }
@@ -175,7 +175,7 @@ Sheet {
                     }
                 }
                 SettingRow {
-                    label: "Use KDE window decorations"
+                    label: IsWindows ? "Use Windows window decorations" : "Use KDE window decorations"
                     hint: "Takes effect after restarting Refract"
                     last: true
                     Toggle { checked: Prefs.nativeDecorations; onToggled: c => Prefs.nativeDecorations = c }
