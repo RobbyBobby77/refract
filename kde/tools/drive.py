@@ -82,20 +82,20 @@ def smoke_steps(session: Session) -> list[tuple[int, str, str]]:
         (200, "win.device = 'cpu'; Prefs.cpuPerCore = true", ""),
         (900, "", "cpu-per-core.png"),
         (200, "Prefs.cpuPerCore = false; settingsSheet.open()", ""),
-        (900, "", "settings.png"),
+        (900, "if (!settingsSheet.opened) throw new Error('Settings did not open')", "settings.png"),
         (200, "settingsSheet.close(); win.page = 'apps'", ""),
         (3000, "Monitor.processes.select(Monitor.processes.get(1).key)", ""),
         (600, "", "apps.png"),
         (200, "actions.processMenu(Monitor.processes.get(1), 400, 400)", ""),
         (900, "", "apps-menu.png"),
         (200, "menu.close(); actions.processDetails(Monitor.processes.get(1))", ""),
-        (1200, "", "process-details.png"),
+        (1200, "if (!procSheet.opened) throw new Error('Process details did not open')", "process-details.png"),
         (200, "procSheet.close(); Prefs.processTree = true", ""),
         (900, "", "apps-tree.png"),
         (200, "Prefs.processTree = false; Monitor.processes.select(''); win.page = 'services'", ""),
         (3500, "", "services.png"),
         (200, "actions.serviceDetails(Monitor.services.get(2))", ""),
-        (1500, "", "service-details.png"),
+        (1500, "if (!svcSheet.opened) throw new Error('Service details did not open')", "service-details.png"),
         (200, "svcSheet.close(); win.page = 'performance'", ""),
         (600, "", ""),
     ]
@@ -128,19 +128,29 @@ def main() -> int:
         return 1
 
     def run(steps: list[tuple[int, str, str]]) -> None:
-        t = 0
-        for delay, js, png in steps:
-            t += delay
+        remaining = iter(steps)
 
-            def act(js: str = js, png: str = png) -> None:
+        def schedule_next() -> None:
+            try:
+                delay, js, png = next(remaining)
+            except StopIteration:
+                QTimer.singleShot(300, QCoreApplication.quit)
+                return
+
+            def act() -> None:
                 if js:
                     session.evaluate(js)
                 if png and out:
                     session.screenshot(str(out / png))
                     print("saved", out / png, flush=True)
+                schedule_next()
 
-            QTimer.singleShot(t, act)
-        QTimer.singleShot(t + 300, QCoreApplication.quit)
+            # Start each delay after the preceding capture has finished. PNG
+            # encoding on high-DPI displays can otherwise queue up actions and
+            # capture a transition before Qt has rendered the new page.
+            QTimer.singleShot(delay, act)
+
+        schedule_next()
 
     def start_smoke() -> None:
         try:

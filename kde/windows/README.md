@@ -56,7 +56,7 @@ their sheets, and fails on QML warnings.
   Rates depend on Windows disk performance counters being enabled. Missing counters
   leave rates unavailable while volume information remains visible.
 - Network use, link speed, addresses, and adapter names.
-- WDDM GPU use and dedicated/shared memory use, with DXGI names and budgets.
+- WDDM GPU use and dedicated/shared memory use, with DXGI names and capacities.
 - Battery percentage, charging state, and remaining discharge time.
 - Processes, window-based application grouping, details, terminate, suspend/resume.
 - Windows services, automatic/manual/disabled startup, and start/stop/restart controls.
@@ -64,8 +64,7 @@ their sheets, and fails on QML warnings.
 - Desktop wallpaper tinting, settings links, clipboard, and file/URL opening.
 
 CPU/GPU temperatures, fan sensors, GPU clocks/power, per-process GPU use, open-file
-counts, Wi-Fi
-SSID/radio details, detailed battery health, CPU cache/virtualization metadata, and
+counts, Wi-Fi SSID/radio details, detailed battery health, CPU cache/virtualization metadata, and
 Linux memory categories have no collector in this port. Unavailable values display
 as dashes. Process pause state reflects pauses issued by Refract; external pauses
 may not be reflected in the table. Windows has one service scope, so the Linux
