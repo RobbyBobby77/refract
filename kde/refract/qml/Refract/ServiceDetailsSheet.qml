@@ -44,7 +44,7 @@ Sheet {
         PillButton {
             text: sheet.enabledUnit ? "Disable" : "Enable"
             tint: Theme.graphite
-            enabledState: sheet.live.enabledState === "enabled" || sheet.live.enabledState === "disabled"
+            enabledState: sheet.live.enabledState === "enabled" || sheet.live.enabledState === "disabled" || (IsWindows && sheet.live.enabledState === "manual")
             onClicked: sheet.actionRequested(sheet.enabledUnit ? "disable" : "enable")
         },
         PillButton { text: "Restart"; tint: Theme.orange; onClicked: sheet.actionRequested("restart") },
@@ -67,7 +67,7 @@ Sheet {
             Repeater {
                 model: [
                     { caption: "Status", text: sheet.live.activeState + " (" + sheet.live.subState + ")" },
-                    { caption: "Startup", text: sheet.live.enabledState || Fmt.dash },
+                    { caption: "Startup", text: IsWindows ? (sheet.enabledUnit ? "Automatic" : sheet.live.enabledState === "manual" ? "Manual" : "Disabled") : sheet.live.enabledState || Fmt.dash },
                     { caption: "Main PID", text: Fmt.isNum(sheet.live.pid) && sheet.live.pid > 0 ? String(sheet.live.pid) : Fmt.dash },
                     { caption: "Memory", text: Fmt.isNum(sheet.live.memory) ? Fmt.bytes(sheet.live.memory, 1) : Fmt.dash }
                 ]
@@ -134,7 +134,7 @@ Sheet {
                     readOnly: true
                     selectByMouse: true
                     wrapMode: TextEdit.WrapAnywhere
-                    text: sheet.logs !== "" ? sheet.logs : (sheet.loadingLogs ? "" : "No journal entries (you may need to be in the systemd-journal group).")
+                    text: sheet.logs !== "" ? sheet.logs : (sheet.loadingLogs ? "" : IsWindows ? "No recent Service Control Manager events for this service." : "No journal entries (you may need to be in the systemd-journal group).")
                     font.family: "monospace"
                     font.pixelSize: 11
                     color: Theme.label

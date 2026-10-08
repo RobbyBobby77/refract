@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls.Basic
-import org.kde.kirigami as Kirigami
 
 // Apps & processes: a live, sortable tree table.
 Item {
@@ -246,7 +245,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             TapHandler { onTapped: row.toggle() }
                         }
-                        Kirigami.Icon {
+                        Icon {
                             width: 18; height: 18
                             anchors.verticalCenter: parent.verticalCenter
                             source: row.icon !== "" ? row.icon : Theme.executableIcon

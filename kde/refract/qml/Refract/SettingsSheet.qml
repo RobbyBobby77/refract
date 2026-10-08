@@ -128,13 +128,13 @@ Sheet {
                                 Text {
                                     visible: swatch.modelData === "system"
                                     anchors.centerIn: parent
-                                    text: "K"
+                                    text: IsWindows ? "S" : "K"
                                     font.pixelSize: 11
                                     font.weight: Font.Bold
                                     color: "white"
                                 }
                                 ToolTipBubble {
-                                    text: swatch.modelData === "multicolor" ? "Multicolour" : swatch.modelData === "system" ? "KDE accent colour" : ""
+                                    text: swatch.modelData === "multicolor" ? "Multicolour" : swatch.modelData === "system" ? (IsWindows ? "System accent colour" : "KDE accent colour") : ""
                                     shown: swatchHover.hovered
                                 }
                                 TapHandler { onTapped: Prefs.accent = swatch.modelData }
@@ -155,10 +155,12 @@ Sheet {
                 }
                 SettingRow {
                     label: "Window background"
-                    hint: WindowEffects.available ? "Glass shows your desktop through the window" : "Glass needs KWin's blur effect"
+                    hint: IsWindows ? "Use your desktop wallpaper or a solid colour"
+                        : WindowEffects.available ? "Glass shows your desktop through the window" : "Glass needs KWin's blur effect"
                     PillSegmented {
-                        model: [{ key: "0", title: "Glass" }, { key: "1", title: "Wallpaper" }, { key: "2", title: "Solid" }]
-                        current: String(Prefs.backdropMode)
+                        model: IsWindows ? [{ key: "1", title: "Wallpaper" }, { key: "2", title: "Solid" }]
+                            : [{ key: "0", title: "Glass" }, { key: "1", title: "Wallpaper" }, { key: "2", title: "Solid" }]
+                        current: String(IsWindows && Prefs.backdropMode === 0 ? 2 : Prefs.backdropMode)
                         onActivated: key => Prefs.backdropMode = parseInt(key)
                     }
                 }
@@ -175,7 +177,7 @@ Sheet {
                     }
                 }
                 SettingRow {
-                    label: "Use KDE window decorations"
+                    label: IsWindows ? "Use Windows window decorations" : "Use KDE window decorations"
                     hint: "Takes effect after restarting Refract"
                     last: true
                     Toggle { checked: Prefs.nativeDecorations; onToggled: c => Prefs.nativeDecorations = c }
@@ -219,10 +221,10 @@ Sheet {
                 }
                 SettingRow {
                     label: "Data engine"
-                    hint: Monitor.staticInfo.engine === "magpie" ? "Mission Center's own collector, via its IPC bridge" : "Build the native parts (build-native.sh) to use magpie"
+                    hint: IsWindows ? "Windows system statistics" : Monitor.staticInfo.engine === "magpie" ? "Mission Center's own collector, via its IPC bridge" : "Build the native parts (build-native.sh) to use magpie"
                     last: true
                     Text {
-                        text: Monitor.staticInfo.engine === "magpie" ? "magpie" : "Built-in"
+                        text: IsWindows ? "Windows" : Monitor.staticInfo.engine === "magpie" ? "magpie" : "Built-in"
                         font.pixelSize: 13
                         font.weight: Font.DemiBold
                         color: Theme.secondaryLabel
@@ -263,9 +265,11 @@ Sheet {
                 heading: "Apps & Services"
                 SettingRow {
                     label: "Show processes as a tree"
+                    last: IsWindows
                     Toggle { checked: Prefs.processTree; onToggled: c => Prefs.processTree = c }
                 }
                 SettingRow {
+                    visible: !IsWindows
                     label: "Show user services"
                     hint: "List services of your user session instead of the system"
                     last: true

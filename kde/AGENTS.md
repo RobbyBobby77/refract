@@ -70,6 +70,18 @@ PySide6, its bundled Qt won't match the system Kirigami. Build deps (Fedora):
 libdrm-devel mesa-libgbm-devel systemd-devel`. `install.sh --deps` holds the package lists per
 distribution — keep them in step with `../.github/README.md`.
 
+### Windows port
+
+`windows/` contains PowerShell launch/build scripts and the Windows dependency pins.
+On **Windows only**, use the local `.venv` with pip PySide6 and psutil: the portable
+icons replace Kirigami, so there is no system-Qt mismatch. No native Linux build or
+Flatpak installation is possible or needed on Windows. `backend/__init__.py` selects
+`windows.py`/`windows_native.py`; keep Linux modules and upstream submodules separate.
+Run `python -m unittest discover -s tests -v`, then `python tools/drive.py --smoke`
+and inspect actual renders. `windows/build.ps1` creates a portable executable and
+ZIP; verify its `--screenshot` launch too. `.github/workflows/windows.yml` repeats
+these checks on a Windows runner. See `windows/README.md` for coverage and limitations.
+
 ## Verifying a change
 
 1. `python3 -m py_compile` on touched Python files.
@@ -102,7 +114,8 @@ to see Qt/scenegraph logs. QML warnings are already routed to Python logging ("Q
 - **Glass samples the scene.** `GlassSurface` refracts `Theme.glassSource`, the `scene`
   item in Main.qml rendered as a layer. Glass must never be *inside* `scene` (it would
   sample itself) and no ancestor of chrome glass may enable `layer` (screen UVs are derived
-  from clip space in glass.vert, assuming OpenGL, which app.py forces). Inside page content
+  from clip space in glass.vert). app.py pins OpenGL on Linux and Direct3D 11 on Windows;
+  GlassSurface's flipY uniform accounts for the different clip-space Y conventions. Inside page content
   use `Card`, `PillSegmented`, `PillButton` instead of glass components.
 - Pass colours to shaders as `vector4d` (non-premultiplied), not `color` uniforms.
 - The scene may be translucent (glass window over KWin blur); glass.frag carries alpha

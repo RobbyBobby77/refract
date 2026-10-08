@@ -34,6 +34,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+if sys.platform == "win32":
+    # Advance animations during unattended captures even when Windows pauses
+    # presentation of an occluded test window.
+    os.environ.setdefault("QSG_RENDER_LOOP", "basic")
+    os.environ.setdefault("QSG_NO_VSYNC", "1")
+
 from PySide6.QtCore import QCoreApplication, QSettings, QTimer  # noqa: E402
 
 from refract.app import Session, parse_args  # noqa: E402
@@ -46,7 +52,9 @@ def _scratch_settings() -> None:
     atexit.register(shutil.rmtree, scratch, True)
     if real.is_dir():
         shutil.copytree(real, scratch / "Refract")
-    QSettings.setPath(QSettings.Format.NativeFormat, QSettings.Scope.UserScope, str(scratch))
+    if sys.platform == "win32":
+        QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(QSettings.defaultFormat(), QSettings.Scope.UserScope, str(scratch))
 
 
 class _ProblemCounter(logging.Handler):
@@ -67,26 +75,27 @@ def smoke_steps(session: Session) -> list[tuple[int, str, str]]:
         "JSON.stringify(Array.from({ length: Monitor.devices.count }, (_, i) => Monitor.devices.get(i).key))") or "[]")
     steps: list[tuple[int, str, str]] = []
     for i, key in enumerate(keys):
+        filename_key = key.replace(':', '_').replace('\\', '_').replace('/', '_')
         steps.append((200, f"win.device = {json.dumps(key)}", ""))
-        steps.append((900, "", f"device-{i:02d}-{key.replace(':', '_')}.png"))
+        steps.append((900, "", f"device-{i:02d}-{filename_key}.png"))
     steps += [
         (200, "win.device = 'cpu'; Prefs.cpuPerCore = true", ""),
         (900, "", "cpu-per-core.png"),
         (200, "Prefs.cpuPerCore = false; settingsSheet.open()", ""),
-        (900, "", "settings.png"),
+        (900, "if (!settingsSheet.opened) throw new Error('Settings did not open')", "settings.png"),
         (200, "settingsSheet.close(); win.page = 'apps'", ""),
         (3000, "Monitor.processes.select(Monitor.processes.get(1).key)", ""),
         (600, "", "apps.png"),
         (200, "actions.processMenu(Monitor.processes.get(1), 400, 400)", ""),
         (900, "", "apps-menu.png"),
         (200, "menu.close(); actions.processDetails(Monitor.processes.get(1))", ""),
-        (1200, "", "process-details.png"),
+        (1200, "if (!procSheet.opened) throw new Error('Process details did not open')", "process-details.png"),
         (200, "procSheet.close(); Prefs.processTree = true", ""),
         (900, "", "apps-tree.png"),
         (200, "Prefs.processTree = false; Monitor.processes.select(''); win.page = 'services'", ""),
         (3500, "", "services.png"),
         (200, "actions.serviceDetails(Monitor.services.get(2))", ""),
-        (1500, "", "service-details.png"),
+        (1500, "if (!svcSheet.opened) throw new Error('Service details did not open')", "service-details.png"),
         (200, "svcSheet.close(); win.page = 'performance'", ""),
         (600, "", ""),
     ]
@@ -98,7 +107,10 @@ def main() -> int:
     cli.add_argument("steps", nargs="?", help="JSON steps file (omit with --smoke)")
     cli.add_argument("--smoke", action="store_true", help="visit every page, sheet and device")
     cli.add_argument("--out", help="directory for screenshots (none are saved without it)")
+    cli.add_argument("--theme", choices=("system", "light", "dark"), help="app color scheme")
     args, app_args = cli.parse_known_args()
+    if args.theme:
+        app_args += ["--theme", args.theme]
     if not args.smoke and not args.steps:
         cli.error("give a steps file or --smoke")
 
@@ -116,19 +128,29 @@ def main() -> int:
         return 1
 
     def run(steps: list[tuple[int, str, str]]) -> None:
-        t = 0
-        for delay, js, png in steps:
-            t += delay
+        remaining = iter(steps)
 
-            def act(js: str = js, png: str = png) -> None:
+        def schedule_next() -> None:
+            try:
+                delay, js, png = next(remaining)
+            except StopIteration:
+                QTimer.singleShot(300, QCoreApplication.quit)
+                return
+
+            def act() -> None:
                 if js:
                     session.evaluate(js)
                 if png and out:
                     session.screenshot(str(out / png))
                     print("saved", out / png, flush=True)
+                schedule_next()
 
-            QTimer.singleShot(t, act)
-        QTimer.singleShot(t + 300, QCoreApplication.quit)
+            # Start each delay after the preceding capture has finished. PNG
+            # encoding on high-DPI displays can otherwise queue up actions and
+            # capture a transition before Qt has rendered the new page.
+            QTimer.singleShot(delay, act)
+
+        schedule_next()
 
     def start_smoke() -> None:
         try:
