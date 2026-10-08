@@ -67,7 +67,7 @@ Sheet {
             Repeater {
                 model: [
                     { caption: "Status", text: sheet.live.activeState + " (" + sheet.live.subState + ")" },
-                    { caption: "Startup", text: sheet.live.enabledState || Fmt.dash },
+                    { caption: "Startup", text: IsWindows ? (sheet.enabledUnit ? "Automatic" : sheet.live.enabledState === "manual" ? "Manual" : "Disabled") : sheet.live.enabledState || Fmt.dash },
                     { caption: "Main PID", text: Fmt.isNum(sheet.live.pid) && sheet.live.pid > 0 ? String(sheet.live.pid) : Fmt.dash },
                     { caption: "Memory", text: Fmt.isNum(sheet.live.memory) ? Fmt.bytes(sheet.live.memory, 1) : Fmt.dash }
                 ]
