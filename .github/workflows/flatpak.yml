@@ -1,0 +1,43 @@
+name: Flatpak
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/flatpak.yml'
+      - '.gitmodules'
+      - 'kde/**'
+      - 'subprojects/magpie'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:44
+      # Bubblewrap needs to create namespaces inside the build container.
+      options: --privileged
+    timeout-minutes: 45
+    steps:
+      - name: Install build tools
+        run: dnf -y install git flatpak flatpak-builder dbus-daemon
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Build and test the Flatpak
+        run: |
+          XDG_RUNTIME_DIR=$(mktemp -d)
+          export XDG_RUNTIME_DIR
+          dbus-run-session -- sh -eu -c '
+            kde/flatpak/build.sh --install
+            flatpak run io.github.RobbyBobby77.Refract --help
+          '
+      - uses: actions/upload-artifact@v6
+        with:
+          name: refract-flatpak-x86_64
+          path: kde/flatpak/refract.flatpak
+          if-no-files-found: error

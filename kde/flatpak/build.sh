@@ -22,7 +22,10 @@ else
 fi
 
 $builder --user --install-deps-from=flathub --force-clean --ccache \
+    --rebuild-on-sdk-change \
     --state-dir="$WORK/state" --repo="$WORK/repo" "$WORK/build" "$APP_ID.yml"
+# Import Refract and its PySide bindings against the runtime users launch with.
+flatpak build --runtime --readonly "$WORK/build" /app/bin/refract --help
 flatpak build-bundle --runtime-repo="$FLATHUB" "$WORK/repo" refract.flatpak "$APP_ID"
 echo "wrote $PWD/refract.flatpak"
 
