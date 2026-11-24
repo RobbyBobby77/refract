@@ -2,9 +2,7 @@
 import json
 import time
 
-from .collectors import SystemSampler
-from .processes import ProcessSampler, AppResolver
-from .services import list_services
+from . import SystemSampler, ProcessSampler, AppResolver, list_services
 
 
 def main() -> None:
@@ -36,6 +34,8 @@ def main() -> None:
                       'services':{'system_count':len(system_services),'user_count':len(user_services),
                                   'system_examples':system_services[:5],'user_examples':user_services[:5]},
                       'timings_ms':timings},indent=2,default=str))
+    if hasattr(system, 'close'):
+        system.close()
 
 
 if __name__ == '__main__':

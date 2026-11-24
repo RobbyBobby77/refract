@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 
 // Content-area capsule button (tinted, not glass).
 Rectangle {
@@ -24,7 +23,7 @@ Rectangle {
         id: row
         anchors.centerIn: parent
         spacing: 6
-        Kirigami.Icon {
+        Icon {
             visible: btn.iconName !== ""
             anchors.verticalCenter: parent.verticalCenter
             width: 15; height: 15

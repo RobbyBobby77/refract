@@ -88,7 +88,7 @@ DeviceView {
         rows: [
             ["Name", v.gpu.name],
             ["Vendor", v.gpu.vendor],
-            ["Type", v.gpu.integrated ? "Integrated" : "Discrete"],
+            ["Type", typeof v.gpu.integrated === "boolean" ? (v.gpu.integrated ? "Integrated" : "Discrete") : Fmt.dash],
             ["Driver", v.gpu.driver],
             ["Driver version", v.gpu.driver_version],
             ["Bus", v.gpu.pcie],

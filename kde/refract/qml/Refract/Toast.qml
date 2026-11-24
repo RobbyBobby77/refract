@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 
 // Transient glass notification ("Couldn't stop sshd.service …").
 GlassSurface {
@@ -29,7 +28,7 @@ GlassSurface {
         id: row
         anchors.centerIn: parent
         spacing: 9
-        Kirigami.Icon {
+        Icon {
             anchors.verticalCenter: parent.verticalCenter
             width: 18; height: 18
             source: toast.error ? "dialog-warning" : "dialog-ok-apply"

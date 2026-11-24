@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 
 // Capsule search field in glass; widens while focused.
 GlassSurface {
@@ -17,7 +16,7 @@ GlassSurface {
     radius: height / 2
     Behavior on width { SpringAnimation { spring: 3; damping: 0.36; epsilon: 0.3 } }
 
-    Kirigami.Icon {
+    Icon {
         id: glass
         x: 13
         anchors.verticalCenter: parent.verticalCenter

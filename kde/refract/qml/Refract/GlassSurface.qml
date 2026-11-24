@@ -42,7 +42,7 @@ Item {
         anchors.fill: parent
         visible: root.source !== null && width > 0 && height > 0
         property var source: root.source
-        property real flipY: 1
+        property real flipY: IsWindows ? -1 : 1
         property size itemSize: Qt.size(width, height)
         property size sourceSize: root.source ? Qt.size(root.source.width, root.source.height) : Qt.size(1, 1)
         property real radius: root.radius

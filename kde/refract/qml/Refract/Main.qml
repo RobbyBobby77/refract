@@ -29,7 +29,7 @@ ApplicationWindow {
     Binding { target: Monitor; property: "interval"; value: Prefs.updateInterval }
     Binding { target: Monitor; property: "processInterval"; value: Prefs.processInterval }
     Binding { target: Monitor; property: "activePage"; value: win.page }
-    Binding { target: Monitor; property: "servicesUser"; value: Prefs.showUserServices }
+    Binding { target: Monitor; property: "servicesUser"; value: !IsWindows && Prefs.showUserServices }
 
     onPageChanged: if (!StartupOptions.screenshot) Prefs.lastPage = page
     onDeviceChanged: if (!StartupOptions.screenshot) Prefs.lastDevice = device
@@ -81,7 +81,7 @@ ApplicationWindow {
         function pidsOf(r) { return r.pids && r.pids.length ? r.pids : (r.pid ? [r.pid] : []) }
         function startsOf(r) { return r.starts || [] }
         function send(r, sig, what) { Monitor.signalProcesses(pidsOf(r), startsOf(r), sig, what + " “" + r.name + "”") }
-        function quit(r) { send(r, "TERM", "Quit") }
+        function quit(r) { if (IsWindows) forceQuit(r); else send(r, "TERM", "Quit") }
         function forceQuit(r) {
             const n = pidsOf(r).length
             confirm.ask("Force quit “" + r.name + "”?",
@@ -102,7 +102,7 @@ ApplicationWindow {
                 { separator: true },
                 stopped ? { text: "Continue", icon: "media-playback-start", action: () => resume(r) }
                         : { text: "Stop", icon: "media-playback-pause", action: () => pause(r) },
-                { text: "Quit", icon: "application-exit", action: () => quit(r) },
+                { text: IsWindows ? "End Process" : "Quit", icon: "application-exit", action: () => quit(r) },
                 { text: "Force Quit", icon: "process-stop", destructive: true, action: () => forceQuit(r) }
             ]
             menu.popupAt(x, y)
@@ -120,7 +120,7 @@ ApplicationWindow {
                         : { text: "Start", icon: "media-playback-start", action: () => serviceAction(r, "start") },
                 { text: "Restart", icon: "view-refresh", action: () => serviceAction(r, "restart") },
                 { separator: true },
-                { text: "Enable", icon: "list-add", enabled: r.enabledState === "disabled", action: () => serviceAction(r, "enable") },
+                { text: "Enable", icon: "list-add", enabled: (r.enabledState === "disabled" || (IsWindows && r.enabledState === "manual")), action: () => serviceAction(r, "enable") },
                 { text: "Disable", icon: "list-remove", enabled: r.enabledState === "enabled", destructive: true, action: () => serviceAction(r, "disable") }
             ]
             menu.popupAt(x, y)
@@ -277,7 +277,7 @@ ApplicationWindow {
             processBar.info.state === "Stopped"
                 ? { text: "Continue", icon: "media-playback-start", action: () => actions.resume(processBar.info) }
                 : { text: "Stop", icon: "media-playback-pause", action: () => actions.pause(processBar.info) },
-            { text: "Quit", icon: "application-exit", action: () => actions.quit(processBar.info) },
+            { text: IsWindows ? "End Process" : "Quit", icon: "application-exit", action: () => actions.quit(processBar.info) },
             { text: "Force Quit", icon: "process-stop", prominent: true, action: () => actions.forceQuit(processBar.info) }
         ]
     }
@@ -297,7 +297,7 @@ ApplicationWindow {
             { text: "Restart", icon: "view-refresh", action: () => actions.serviceAction(serviceBar.info, "restart") },
             serviceBar.info.enabledState === "enabled"
                 ? { text: "Disable", icon: "list-remove", action: () => actions.serviceAction(serviceBar.info, "disable") }
-                : { text: "Enable", icon: "list-add", enabled: serviceBar.info.enabledState === "disabled",
+                : { text: "Enable", icon: "list-add", enabled: (serviceBar.info.enabledState === "disabled" || (IsWindows && serviceBar.info.enabledState === "manual")),
                     action: () => actions.serviceAction(serviceBar.info, "enable") },
             serviceBar.running
                 ? { text: "Stop", icon: "media-playback-stop", prominent: true, action: () => actions.serviceAction(serviceBar.info, "stop") }
@@ -336,7 +336,7 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+3"; onActivated: win.page = "services" }
     Shortcut { sequence: "Ctrl+,"; onActivated: settingsSheet.open() }
     Shortcut {
-        sequence: StandardKey.Find
+        sequences: [StandardKey.Find]
         onActivated: {
             if (win.page === "performance") win.page = "apps"
             Qt.callLater(() => (win.page === "services" ? serviceSearch : appSearch).focusField())

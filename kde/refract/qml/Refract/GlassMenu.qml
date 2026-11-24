@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls.Basic
-import org.kde.kirigami as Kirigami
 
 // Context menu made of glass.
 Popup {
@@ -64,7 +63,7 @@ Popup {
                     x: 10
                     spacing: 10
                     opacity: entry.enabledEntry ? 1 : 0.4
-                    Kirigami.Icon {
+                    Icon {
                         width: 16; height: 16
                         anchors.verticalCenter: parent.verticalCenter
                         source: entry.modelData.icon || ""

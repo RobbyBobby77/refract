@@ -57,9 +57,11 @@ class Session:
                             format="%(levelname)s %(name)s: %(message)s")
 
         QQuickStyle.setStyle("Basic")
-        # The glass shaders derive screen positions from clip space; pin the API
-        # so the convention is known (OpenGL is also Qt's default on Linux).
-        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGL)
+        # Use the native Windows renderer; its clip-space Y axis differs from
+        # OpenGL. The glass vertex shader's flipY uniform accounts for that.
+        graphics_api = (QSGRendererInterface.GraphicsApi.Direct3D11 if sys.platform == "win32"
+                        else QSGRendererInterface.GraphicsApi.OpenGL)
+        QQuickWindow.setGraphicsApi(graphics_api)
         # Frameless windows draw their own rounded corners, so they need alpha.
         QQuickWindow.setDefaultAlphaBuffer(True)
 
@@ -80,12 +82,16 @@ class Session:
         self.monitor = Monitor()
         self.effects = WindowEffects()
         self.engine = QQmlApplicationEngine()
+        if sys.platform == "win32":
+            from .icons import IconProvider
+            self.engine.addImageProvider("platformicons", IconProvider())
         self.engine.warnings.connect(
             lambda warnings: [logging.warning("QML: %s", w.toString()) for w in warnings])
         ctx = self.engine.rootContext()
         ctx.setContextProperty("Monitor", self.monitor)
         ctx.setContextProperty("WindowEffects", self.effects)
         ctx.setContextProperty("AppVersion", __version__)
+        ctx.setContextProperty("IsWindows", sys.platform == "win32")
         ctx.setContextProperty("BasedOn", BASED_ON)
         ctx.setContextProperty("AppIcon", QUrl.fromLocalFile(str(ROOT / "icons" / f"{APP_ID}.svg")).toString())
         ctx.setContextProperty("ShaderDir", QUrl.fromLocalFile(str(ROOT / "shaders") + "/").toString())
@@ -127,7 +133,8 @@ class Session:
             # A sampler is blocked in a system call; destroying its QThread
             # would abort, so leave without running destructors.
             logging.warning("sampler thread did not stop in time; exiting")
-            sys.stdout.flush()
+            if sys.stdout is not None:
+                sys.stdout.flush()
             os._exit(code)
 
 

@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls.Basic
-import org.kde.kirigami as Kirigami
 
 // Live details for a process (or the main process of an app).
 Sheet {
@@ -35,7 +34,7 @@ Sheet {
 
     footer: [
         PillButton { text: "Copy Command"; tint: Theme.graphite; onClicked: Monitor.copy(sheet.details.cmdline || "") },
-        PillButton { text: "Quit"; tint: Theme.red; onClicked: { sheet.quitRequested(sheet.live); sheet.close() } },
+        PillButton { text: IsWindows ? "End Process" : "Quit"; tint: Theme.red; onClicked: { sheet.quitRequested(sheet.live); sheet.close() } },
         PillButton { text: "Done"; prominent: true; onClicked: sheet.close() }
     ]
 
@@ -105,7 +104,7 @@ Sheet {
                             const d = sheet.details
                             const rows = [
                                 ["State", d.state], ["User", d.user], ["Parent PID", d.ppid],
-                                ["Threads", d.threads], ["Nice", d.nice],
+                                ["Threads", d.threads], [IsWindows ? "Priority" : "Nice", d.nice],
                                 ["Started", Fmt.dateTime(d.start_time)],
                                 ["Resident memory", Fmt.bytes(d.memory_rss, 1)],
                                 ["Shared memory", Fmt.bytes(d.memory_shared, 1)],

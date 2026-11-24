@@ -11,6 +11,7 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 import traceback
@@ -25,8 +26,9 @@ from PySide6.QtCore import (
     QTimer,
     Signal,
     Slot,
+    QUrl,
 )
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 from .models import DeviceModel, ProcessModel, ServiceModel
 from . import sandbox, wallpaper
@@ -101,6 +103,8 @@ class SamplerWorker(QObject):
 
     def _use_magpie(self) -> bool:
         """Mission Center's own engine, when it has been built (build-native.sh)."""
+        if sys.platform == "win32":
+            return False
         from .backend import magpie
         from .backend.collectors import SystemSampler
 
@@ -114,8 +118,7 @@ class SamplerWorker(QObject):
         return True
 
     def _use_python(self) -> bool:
-        from .backend.collectors import SystemSampler
-        from .backend.processes import AppResolver, ProcessSampler
+        from .backend import AppResolver, ProcessSampler, SystemSampler
 
         if self._magpie is not None:
             self._magpie.close()
@@ -123,13 +126,15 @@ class SamplerWorker(QObject):
         self._sys = SystemSampler()
         self._procs = ProcessSampler()
         self._apps = AppResolver()
-        log.info("data engine: built-in Python collectors")
+        log.info("data engine: %s", "Windows" if sys.platform == "win32" else "built-in Python collectors")
         return True
 
     @Slot()
     def stop(self) -> None:
         if self._timer:
             self._timer.stop()
+        if self._sys is not None and hasattr(self._sys, "close"):
+            self._sys.close()
         if self._magpie is not None:
             self._magpie.close()
 
@@ -220,7 +225,7 @@ class ServiceWorker(QObject):
 
     @Slot()
     def refresh(self) -> None:
-        from .backend.services import list_services
+        from .backend import list_services
 
         try:
             self.servicesReady.emit(list_services(self._user))
@@ -285,6 +290,7 @@ class Monitor(QObject):
         self._thread = QThread(self)
         self._worker = SamplerWorker()
         self._worker.moveToThread(self._thread)
+        self._thread.finished.connect(self._worker.deleteLater)
         self._thread.started.connect(self._worker.start)
         self._worker.staticReady.connect(self._on_static)
         self._worker.systemReady.connect(self._on_system)
@@ -298,6 +304,7 @@ class Monitor(QObject):
         self._svc_thread = QThread(self)
         self._svc_worker = ServiceWorker()
         self._svc_worker.moveToThread(self._svc_thread)
+        self._svc_thread.finished.connect(self._svc_worker.deleteLater)
         self._svc_thread.started.connect(self._svc_worker.start)
         self._svc_worker.servicesReady.connect(self._on_services)
         self._svc_worker.failed.connect(lambda tb: log.error("services failure:\n%s", tb))
@@ -541,7 +548,7 @@ class Monitor(QObject):
 
     @Slot(int, result="QVariantMap")
     def processDetails(self, pid: int) -> dict[str, Any]:
-        from .backend.processes import process_details
+        from .backend import process_details
 
         try:
             return process_details(pid) or {}
@@ -552,7 +559,7 @@ class Monitor(QObject):
     @Slot("QVariantList", "QVariantList", str, str)
     def signalProcesses(self, pids: list[int], starts: list[int | None], sig: str, title: str) -> None:
         """Signal processes; `starts` (start times) guard against recycled PIDs."""
-        from .backend.processes import signal_process
+        from .backend import signal_process
 
         def run() -> None:
             errors = []
@@ -567,7 +574,7 @@ class Monitor(QObject):
 
     @Slot(str, str, bool)
     def serviceAction(self, name: str, action: str, user: bool) -> None:
-        from .backend.services import service_action
+        from .backend import service_action
 
         def run() -> None:
             ok, err = service_action(name, action, user)
@@ -578,7 +585,7 @@ class Monitor(QObject):
 
     @Slot(str, bool)
     def requestLogs(self, name: str, user: bool) -> None:
-        from .backend.services import service_logs
+        from .backend import service_logs
 
         def run() -> None:
             self.logsReady.emit(name, service_logs(name, user))
@@ -588,6 +595,19 @@ class Monitor(QObject):
     @Slot(str, "QVariantList")
     def launch(self, program: str, args: list[str]) -> None:
         """Start a helper program (System Settings modules, file manager…)."""
+        if sys.platform == "win32":
+            if program == "xdg-open" and args:
+                target = str(args[0])
+                url = QUrl.fromLocalFile(target) if os.path.exists(target) else QUrl(target)
+            elif program == "systemsettings":
+                page = "network" if "kcm_networkmanagement" in args else "powersleep"
+                url = QUrl("ms-settings:" + page)
+            else:
+                self.actionFinished.emit(program, False, "This helper is unavailable on Windows")
+                return
+            if not QDesktopServices.openUrl(url):
+                self.actionFinished.emit(program, False, "Could not open the requested location")
+            return
         if sandbox.IN_FLATPAK:
             threading.Thread(target=self._launch_on_host, args=(program, args), daemon=True).start()
             return

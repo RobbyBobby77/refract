@@ -1,5 +1,4 @@
 import QtQuick
-import org.kde.kirigami as Kirigami
 
 // Floating glass capsule of actions for the current selection. It rises into
 // view when something is selected, like a toolbar in iOS 26.
@@ -33,7 +32,7 @@ GlassSurface {
             spacing: 9
             leftPadding: 10
             rightPadding: 10
-            Kirigami.Icon {
+            Icon {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 22; height: 22
                 visible: bar.iconSource !== ""
@@ -71,7 +70,7 @@ GlassSurface {
                     id: actionRow
                     anchors.centerIn: parent
                     spacing: 7
-                    Kirigami.Icon {
+                    Icon {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 16; height: 16
                         visible: !!action.modelData.icon

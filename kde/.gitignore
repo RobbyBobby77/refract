@@ -3,3 +3,4 @@ __pycache__/
 native/build/
 magpie-bridge/target/
 refract/native/
+.venv/
